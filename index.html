@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reporte de Problemas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">Reportes</div>
+        <i class="material-icons">menu</i>
+    </header>
+
+    <main id="main-content">
+        <!-- Main Menu -->
+        <div id="home-view" class="view active">
+            <h1 class="page-title">¿Qué deseas reportar?</h1>
+            <div class="card-grid">
+                <button class="square-btn bg-blue" onclick="navigateTo('vencimiento-view')">
+                    <i class="material-icons">event_busy</i>
+                    <span>Problemas Vencimiento</span>
+                </button>
+                <button class="square-btn bg-yellow" onclick="navigateTo('abastecimiento-view')">
+                    <i class="material-icons">inventory_2</i>
+                    <span>Problemas Abastecimiento</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vencimiento Form -->
+        <div id="vencimiento-view" class="view">
+            <div class="view-header">
+                <button class="back-btn" onclick="navigateTo('home-view')">
+                    <i class="material-icons">arrow_back</i>
+                </button>
+                <h2>Reporte de Vencimiento</h2>
+            </div>
+            
+            <form id="vencimiento-form" class="styled-form">
+                <div class="form-group">
+                    <label for="fecha-venc">Fecha de vencimiento</label>
+                    <input type="date" id="fecha-venc" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cantidad">Cantidad por vencer</label>
+                    <input type="number" id="cantidad" placeholder="Ej: 50" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="item-id">Item</label>
+                    <input type="text" id="item-id" placeholder="Código del item" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nombre-prod">Nombre del producto</label>
+                    <input type="text" id="nombre-prod" placeholder="Ej: Leche descremada" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="remitente">Quién lo manda</label>
+                    <input type="text" id="remitente" placeholder="Nombre del proveedor o área" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">Enviar Reporte</button>
+            </form>
+        </div>
+
+        <!-- Abastecimiento Form (Placeholder) -->
+        <div id="abastecimiento-view" class="view">
+            <div class="view-header">
+                <button class="back-btn" onclick="navigateTo('home-view')">
+                    <i class="material-icons">arrow_back</i>
+                </button>
+                <h2>Reporte de Abastecimiento</h2>
+            </div>
+            <p class="placeholder-text">Formulario de abastecimiento en construcción.</p>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
