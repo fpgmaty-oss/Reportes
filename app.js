@@ -12,7 +12,7 @@ function navigateTo(viewId) {
 }
 
 // URL del Webhook (Aquí pondrás la URL que te dé Google Script o tu servicio de automatización)
-const WEBHOOK_URL = '';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwU-ZIb8iEBjozCscUqGW5deaQlFZiG10wayLphvHqlTWyKyZ5BUdb4xVYBfk2rzeou/exec';
 
 // Handle form submission
 document.getElementById('vencimiento-form').addEventListener('submit', async function(e) {
