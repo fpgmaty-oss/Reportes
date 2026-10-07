@@ -12,7 +12,7 @@ function navigateTo(viewId) {
 }
 
 // URL del Webhook (Aquí pondrás la URL que te dé Google Script o tu servicio de automatización)
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwU-ZIb8iEBjozCscUqGW5deaQlFZiG10wayLphvHqlTWyKyZ5BUdb4xVYBfk2rzeou/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxJVkG6HVXtmOXgr5DAbLEnZNxeQ01e-5wh0gV7G-6nvi3JWG6pBV4ZyHQE9xfLVPSh/exec';
 
 // Handle form submission
 document.getElementById('vencimiento-form').addEventListener('submit', async function(e) {
@@ -50,11 +50,10 @@ document.getElementById('vencimiento-form').addEventListener('submit', async fun
     try {
         await fetch(WEBHOOK_URL, {
             method: 'POST',
-            mode: 'no-cors', // Importante para evitar problemas de seguridad del navegador
+            body: JSON.stringify(formData),
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+                'Content-Type': 'text/plain;charset=utf-8'
+            }
         });
         
         alert('Reporte guardado correctamente.');
