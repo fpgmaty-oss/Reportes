@@ -2,15 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plan de Recuperacion - Indicador Modulares</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  .tab-btn { padding: 0.5rem 1rem; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; color: #64748b; background: #e2e8f0; cursor: pointer; }
+  .tab-btn { padding: 0.5rem 1rem; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; color: #64748b; background: #e2e8f0; cursor: pointer; white-space: nowrap; }
   .tab-btn-active { background: white; color: #1e293b; border-bottom: 3px solid #2563eb; }
   .tab-panel.hidden { display: none; }
   .task-check:checked ~ td { text-decoration: line-through; }
   tr:has(.task-check:checked) { opacity: 0.45; }
+  .tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; -ms-overflow-style: none; }
+  @media (max-width: 640px) {
+    table { font-size: 0.75rem; }
+    table th, table td { padding: 6px 8px !important; white-space: nowrap; }
+    main.max-w-6xl, div.max-w-6xl { padding-left: 1rem !important; padding-right: 1rem !important; }
+    header .max-w-6xl { padding-left: 1rem !important; padding-right: 1rem !important; }
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
@@ -934,6 +943,20 @@
       </ul>
     </section>
   </main>
+
+  <script>
+    // Envuelve tablas anchas y tabs en contenedores con scroll horizontal
+    // para que no rompan el layout en pantallas de telefono.
+    document.querySelectorAll('table').forEach(function (table) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-scroll';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+    document.querySelectorAll('.flex.gap-1.border-b').forEach(function (tabs) {
+      tabs.classList.add('tabs-scroll');
+    });
+  </script>
 
   <script>
     const burndownCtx = document.getElementById('burndownChart');
