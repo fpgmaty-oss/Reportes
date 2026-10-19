@@ -7,6 +7,24 @@ const OPERATORS_STORAGE_KEY = 'reportes_autopick_operators_v1';
 
 let autopickChartInstance = null;
 
+// Helpers para normalizar motivos a solo 2 opciones válidas
+function isEstante(motivo) {
+    if (!motivo) return true; // Default
+    const m = motivo.toLowerCase();
+    return m.includes('estante') || m.includes('capacidad') || m.includes('espacio') || m.includes('góndola');
+}
+
+function isDanado(motivo) {
+    if (!motivo) return false;
+    const m = motivo.toLowerCase();
+    return m.includes('dañ') || m.includes('roto') || m.includes('golpe') || m.includes('merma') || m.includes('fuga') || m.includes('damage');
+}
+
+function normalizeMotivo(motivo) {
+    if (isDanado(motivo)) return 'Producto dañado';
+    return 'Capacidad de estante';
+}
+
 // Sincronización en vivo instantánea entre pestañas / pantallas
 const syncChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('autopick_sync_channel') : null;
 if (syncChannel) {
@@ -210,14 +228,14 @@ async function handleAutopickSubmit(e) {
     const quienInput = document.getElementById('autopick-quien');
     const cantidadInput = document.getElementById('autopick-cantidad');
     const turnoSelect = document.getElementById('autopick-turno');
-    const motivoSelect = document.getElementById('autopick-motivo');
     const obsInput = document.getElementById('autopick-obs');
     const submitBtn = document.getElementById('autopick-submit-btn');
 
     const quien = quienInput.value.trim();
     const cantidad = parseInt(cantidadInput.value, 10);
     const turno = turnoSelect.value;
-    const motivo = motivoSelect.value;
+    const motivoRadio = document.querySelector('input[name="autopick-motivo"]:checked');
+    const motivo = motivoRadio ? motivoRadio.value : 'Capacidad de estante';
     const observaciones = obsInput.value.trim();
 
     if (!quien || isNaN(cantidad) || cantidad <= 0) {
@@ -266,9 +284,12 @@ async function handleAutopickSubmit(e) {
 
     // 3. Sincronizar en segundo plano con el Webhook si está disponible
     if (WEBHOOK_URL) {
+        const esEstante = (motivo || '').toLowerCase().includes('estante') || (motivo || '').toLowerCase().includes('capacidad');
         const payload = {
             tipoReporte: 'AutopickDevueltas',
             ...newRecord,
+            cajasCapacidadEstante: esEstante ? cantidad : 0,
+            cajasProductoDanado: !esEstante ? cantidad : 0,
             fechaEnvio: now.toLocaleString()
         };
 
@@ -305,6 +326,8 @@ async function syncNow(manual = true) {
                         if (typeof cloudRecords[0] === 'object' && !Array.isArray(cloudRecords[0])) {
                             // Viene como lista de objetos JSON {quien, cantidad, fecha, ...}
                             normalized = cloudRecords.filter(r => r && (r.tipoReporte === 'AutopickDevueltas' || r.cantidad));
+                            // Normalizar motivos a solo 2 opciones
+                            normalized.forEach(r => { if (r.motivo) r.motivo = normalizeMotivo(r.motivo); });
                         } else if (Array.isArray(cloudRecords[0])) {
                             // Viene como matriz de celdas de Google Sheets [ [col1, col2, ...], ... ]
                             const headers = cloudRecords[0].map(h => String(h).toLowerCase().trim());
@@ -328,7 +351,7 @@ async function syncNow(manual = true) {
                                     quien: quienIdx !== -1 ? String(row[quienIdx] || 'Operador') : 'Operador',
                                     cantidad: cantidad,
                                     turno: turnoIdx !== -1 ? String(row[turnoIdx] || 'Mañana') : 'Mañana',
-                                    motivo: motivoIdx !== -1 ? String(row[motivoIdx] || 'Devolución') : 'Devolución',
+                                    motivo: motivoIdx !== -1 ? normalizeMotivo(String(row[motivoIdx] || '')) : 'Capacidad de estante',
                                     observaciones: obsIdx !== -1 ? String(row[obsIdx] || '') : '',
                                     fecha: fechaIdx !== -1 ? String(row[fechaIdx] || getTodayDateString()) : getTodayDateString(),
                                     hora: horaIdx !== -1 ? String(row[horaIdx] || '12:00') : '12:00',
@@ -377,6 +400,14 @@ function updateAutopickUI() {
     const totalHistorico = records.reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
     const totalAnotaciones = records.length;
 
+    // Desglose por motivo (solo 2: Capacidad de estante / Producto dañado)
+    const cajasEstanteHoy = todayRecords
+        .filter(r => isEstante(r.motivo))
+        .reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+    const cajasDanadoHoy = todayRecords
+        .filter(r => isDanado(r.motivo))
+        .reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+
     // Actualizar Badges en Home
     const homeCount = document.getElementById('home-autopick-count');
     if (homeCount) homeCount.textContent = totalHoy;
@@ -389,6 +420,26 @@ function updateAutopickUI() {
         kpiHoySub.textContent = todayRecords.length > 0 
             ? `${todayRecords.length} registro${todayRecords.length > 1 ? 's' : ''} hoy`
             : 'Sin registros hoy';
+    }
+
+    // KPI: Capacidad de Estante
+    const kpiEstante = document.getElementById('kpi-cajas-estante');
+    const kpiEstanteSub = document.getElementById('kpi-estante-sub');
+    if (kpiEstante) kpiEstante.textContent = cajasEstanteHoy;
+    if (kpiEstanteSub) {
+        kpiEstanteSub.textContent = totalHoy > 0
+            ? `${Math.round(cajasEstanteHoy / totalHoy * 100)}% del total hoy`
+            : '0% del total hoy';
+    }
+
+    // KPI: Producto Dañado
+    const kpiDanado = document.getElementById('kpi-cajas-danado');
+    const kpiDanadoSub = document.getElementById('kpi-danado-sub');
+    if (kpiDanado) kpiDanado.textContent = cajasDanadoHoy;
+    if (kpiDanadoSub) {
+        kpiDanadoSub.textContent = totalHoy > 0
+            ? `${Math.round(cajasDanadoHoy / totalHoy * 100)}% del total hoy`
+            : '0% del total hoy';
     }
 
     const kpiTotal = document.getElementById('kpi-cajas-total');
@@ -531,6 +582,10 @@ function renderHistoryDOM(records) {
             ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic;">"${escapeHtml(rec.observaciones)}"</div>` 
             : '';
 
+        // Determinar clase visual según motivo normalizado
+        const motivoPillClass = isDanado(rec.motivo) ? 'pill-danado' : 'pill-estante';
+        const motivoDisplay = normalizeMotivo(rec.motivo);
+
         return `
             <div class="history-item" id="rec-item-${rec.id}">
                 <div class="history-item-left">
@@ -539,7 +594,7 @@ function renderHistoryDOM(records) {
                         <div class="history-top-row">
                             <span class="history-author">${escapeHtml(rec.quien)}</span>
                             <span class="history-pill pill-turno">${escapeHtml(rec.turno || 'Turno')}</span>
-                            <span class="history-pill pill-motivo">${escapeHtml(rec.motivo || 'Devolución')}</span>
+                            <span class="history-pill ${motivoPillClass}">${escapeHtml(motivoDisplay)}</span>
                         </div>
                         <div class="history-meta-row">
                             <i class="material-icons" style="font-size: 13px;">schedule</i>
@@ -833,7 +888,71 @@ function renderAutopickChart() {
         }
     }
     // ======================================================================
-    // MODO 3: POR COLABORADOR (QUIÉN ANOTÓ MÁS)
+    // MODO 3: ESTANTE VS DAÑADO (Doughnut / Barras Apiladas)
+    // ======================================================================
+    else if (chartType === 'motivo') {
+        const totalEstante = sorted.filter(r => isEstante(r.motivo)).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+        const totalDanado = sorted.filter(r => isDanado(r.motivo)).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+
+        autopickChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Capacidad de estante', 'Producto dañado'],
+                datasets: [{
+                    data: [totalEstante, totalDanado],
+                    backgroundColor: ['#0071ce', '#ef4444'],
+                    borderColor: ['#ffffff', '#ffffff'],
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: { size: 13, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#041f41',
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const total = totalEstante + totalDanado;
+                                const pct = total > 0 ? Math.round(context.raw / total * 100) : 0;
+                                return ` ${context.label}: ${context.raw} cajas (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (legendStats) {
+            const total = totalEstante + totalDanado;
+            const pctEstante = total > 0 ? Math.round(totalEstante / total * 100) : 0;
+            const pctDanado = total > 0 ? Math.round(totalDanado / total * 100) : 0;
+            legendStats.innerHTML = `
+                <div class="chart-legend-item">
+                    <span class="chart-legend-dot" style="background:#0071ce;"></span>
+                    <span>Estante: <strong>${totalEstante} cajas (${pctEstante}%)</strong></span>
+                </div>
+                <div class="chart-legend-item">
+                    <span class="chart-legend-dot" style="background:#ef4444;"></span>
+                    <span>Dañado: <strong>${totalDanado} cajas (${pctDanado}%)</strong></span>
+                </div>
+            `;
+        }
+    }
+    // ======================================================================
+    // MODO 4: POR COLABORADOR (QUIÉN ANOTÓ MÁS)
     // ======================================================================
     else if (chartType === 'operador') {
         const operatorCounts = {};
@@ -1010,8 +1129,8 @@ function loadSampleAutopickData() {
             quien: 'Carlos M.',
             cantidad: 14,
             turno: 'Mañana',
-            motivo: 'Pedido cancelado',
-            observaciones: 'Lácteos y panadería',
+            motivo: 'Capacidad de estante',
+            observaciones: 'Pasillo 3, góndola de cereales llena',
             fecha: todayStr,
             hora: '08:30',
             timestamp: now - (6 * 3600 * 1000)
@@ -1021,8 +1140,8 @@ function loadSampleAutopickData() {
             quien: 'Andrea R.',
             cantidad: 8,
             turno: 'Mañana',
-            motivo: 'Rechazo cliente',
-            observaciones: 'Cliente no estaba en domicilio',
+            motivo: 'Producto dañado',
+            observaciones: 'Cajas de galletas aplastadas',
             fecha: todayStr,
             hora: '10:45',
             timestamp: now - (4 * 3600 * 1000)
@@ -1032,8 +1151,8 @@ function loadSampleAutopickData() {
             quien: 'Pedro S.',
             cantidad: 22,
             turno: 'Tarde',
-            motivo: 'Incompleto / Desfase',
-            observaciones: 'Falta de productos congelados',
+            motivo: 'Capacidad de estante',
+            observaciones: 'Pallet alto sin espacio en pasillo 5',
             fecha: todayStr,
             hora: '13:15',
             timestamp: now - (2 * 3600 * 1000)
@@ -1043,8 +1162,8 @@ function loadSampleAutopickData() {
             quien: 'Carlos M.',
             cantidad: 19,
             turno: 'Tarde',
-            motivo: 'Sobrante de ruta',
-            observaciones: 'Camioneta ruta norte',
+            motivo: 'Producto dañado',
+            observaciones: 'Botellas con fuga en caja',
             fecha: todayStr,
             hora: '15:20',
             timestamp: now - (45 * 60 * 1000)
@@ -1054,8 +1173,8 @@ function loadSampleAutopickData() {
             quien: 'Juan P.',
             cantidad: 11,
             turno: 'Tarde',
-            motivo: 'Cadena de frío / Calidad',
-            observaciones: 'Descongelados en trayecto',
+            motivo: 'Capacidad de estante',
+            observaciones: 'Góndola B2 sin espacio para refrescos',
             fecha: todayStr,
             hora: '17:05',
             timestamp: now - (10 * 60 * 1000)

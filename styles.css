@@ -51,15 +51,21 @@ body {
 .app-header {
     background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
     color: white;
-    padding: 14px 20px;
-    padding-top: calc(14px + env(safe-area-inset-top));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 12px 20px;
+    padding-top: calc(12px + env(safe-area-inset-top));
     box-shadow: var(--shadow-md);
     position: sticky;
     top: 0;
     z-index: 100;
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .header-left {
@@ -129,9 +135,9 @@ body {
    Main Content Layout
    ========================================================================== */
 #main-content {
-    padding: 20px 16px;
+    padding: 24px 20px;
     padding-bottom: calc(40px + env(safe-area-inset-bottom));
-    max-width: 880px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -162,25 +168,33 @@ body {
    ========================================================================== */
 .home-welcome {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .page-title {
-    font-size: 22px;
+    font-size: 26px;
     color: var(--dark-blue);
-    font-weight: 700;
-    margin-bottom: 6px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
 }
 
 .page-subtitle {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-muted);
 }
 
 .card-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 680px) {
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
 }
 
 .square-btn {
@@ -425,6 +439,7 @@ body {
 .bg-green-subtle { background: var(--success-light); color: var(--success-green); }
 .bg-yellow-subtle { background: var(--warning-light); color: var(--warning-amber); }
 .bg-purple-subtle { background: var(--purple-light); color: var(--purple-accent); }
+.bg-red-subtle { background: var(--danger-light); color: var(--danger-red); }
 
 .kpi-label {
     font-size: 11px;
@@ -471,6 +486,155 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Desktop 2-Column Dashboard Layout
+   ========================================================================== */
+.desktop-two-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (min-width: 960px) {
+    .desktop-two-col {
+        grid-template-columns: 1.05fr 1fr;
+        align-items: stretch;
+    }
+    .desktop-two-col .card {
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .desktop-two-col .card-chart .chart-container-wrapper {
+        flex: 1;
+        min-height: 330px;
+    }
+}
+
+/* Centrado de formularios simples en Desktop */
+#vencimiento-view .card, 
+#abastecimiento-view .card {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================================================
+   Selector de Motivo (Capacidad de estante vs Producto dañado)
+   ========================================================================== */
+.motivo-toggle-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+    .motivo-toggle-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+.motivo-btn-card {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    display: block;
+}
+
+.motivo-btn-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.motivo-card-content {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-alt);
+    transition: all 0.15s ease;
+}
+
+.motivo-card-content:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+.motivo-card-content i {
+    font-size: 28px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: color 0.15s;
+}
+
+.motivo-card-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.motivo-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    line-height: 1.2;
+}
+
+.motivo-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Activo: Capacidad de estante */
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-estante {
+    border-color: var(--primary-blue);
+    background: #f0f7ff;
+    box-shadow: 0 0 0 1px var(--primary-blue), var(--shadow-sm);
+}
+
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-estante i {
+    color: var(--primary-blue);
+}
+
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-estante .motivo-title {
+    color: var(--primary-blue);
+}
+
+/* Activo: Producto dañado */
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-danado {
+    border-color: var(--danger-red);
+    background: #fef2f2;
+    box-shadow: 0 0 0 1px var(--danger-red), var(--shadow-sm);
+}
+
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-danado i {
+    color: var(--danger-red);
+}
+
+.motivo-btn-card input[type="radio"]:checked + .motivo-card-content.bg-danado .motivo-title {
+    color: var(--danger-red);
+}
+
+/* Badges en Historial */
+.pill-estante {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid rgba(3, 105, 161, 0.2);
+}
+
+.pill-danado {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid rgba(185, 28, 28, 0.2);
 }
 
 /* ==========================================================================

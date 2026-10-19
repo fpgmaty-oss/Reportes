@@ -18,22 +18,24 @@
 <body>
     <!-- Top Header -->
     <header class="app-header">
-        <div class="header-left">
-            <div class="logo">
-                <i class="material-icons">dashboard</i>
-                <span>Reportes</span>
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="material-icons">dashboard</i>
+                    <span>Reportes</span>
+                </div>
+                <div class="header-badge" id="online-status">
+                    <span class="status-dot"></span> Operativo
+                </div>
             </div>
-            <div class="header-badge" id="online-status">
-                <span class="status-dot"></span> Operativo
+            <div class="header-actions">
+                <button type="button" class="icon-header-btn" title="Compartir Resumen" onclick="shareQuickSummary()">
+                    <i class="material-icons">share</i>
+                </button>
+                <button type="button" class="icon-header-btn" id="menu-toggle-btn" title="Menú de opciones" onclick="toggleDrawer()">
+                    <i class="material-icons">menu</i>
+                </button>
             </div>
-        </div>
-        <div class="header-actions">
-            <button type="button" class="icon-header-btn" title="Compartir Resumen" onclick="shareQuickSummary()">
-                <i class="material-icons">share</i>
-            </button>
-            <button type="button" class="icon-header-btn" id="menu-toggle-btn" title="Menú de opciones" onclick="toggleDrawer()">
-                <i class="material-icons">menu</i>
-            </button>
         </div>
     </header>
 
@@ -133,7 +135,7 @@
                         <i class="material-icons">all_inbox</i>
                     </div>
                     <div class="kpi-content">
-                        <span class="kpi-label">Cajas Devueltas Hoy</span>
+                        <span class="kpi-label">Total Cajas Hoy</span>
                         <div class="kpi-value-row">
                             <span class="kpi-number" id="kpi-cajas-hoy">0</span>
                             <span class="kpi-unit">cajas</span>
@@ -143,22 +145,36 @@
                 </div>
 
                 <div class="kpi-card">
-                    <div class="kpi-icon-wrap bg-green-subtle">
-                        <i class="material-icons">trending_up</i>
+                    <div class="kpi-icon-wrap bg-blue-subtle">
+                        <i class="material-icons text-blue">shelves</i>
                     </div>
                     <div class="kpi-content">
-                        <span class="kpi-label">Total Histórico</span>
+                        <span class="kpi-label">Capacidad de Estante</span>
                         <div class="kpi-value-row">
-                            <span class="kpi-number" id="kpi-cajas-total">0</span>
+                            <span class="kpi-number" id="kpi-cajas-estante">0</span>
                             <span class="kpi-unit">cajas</span>
                         </div>
-                        <span class="kpi-subtext" id="kpi-total-registros">0 anotaciones</span>
+                        <span class="kpi-subtext" id="kpi-estante-sub">0% del total hoy</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrap bg-red-subtle">
+                        <i class="material-icons text-red">report_problem</i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Producto Dañado</span>
+                        <div class="kpi-value-row">
+                            <span class="kpi-number" id="kpi-cajas-danado">0</span>
+                            <span class="kpi-unit">cajas</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-danado-sub">0% del total hoy</span>
                     </div>
                 </div>
 
                 <div class="kpi-card">
                     <div class="kpi-icon-wrap bg-yellow-subtle">
-                        <i class="material-icons">schedule</i>
+                        <i class="material-icons text-yellow">schedule</i>
                     </div>
                     <div class="kpi-content">
                         <span class="kpi-label">Último Ingreso</span>
@@ -168,137 +184,141 @@
                         <span class="kpi-subtext" id="kpi-ultimo-detalle">Esperando registros</span>
                     </div>
                 </div>
-
-                <div class="kpi-card">
-                    <div class="kpi-icon-wrap bg-purple-subtle">
-                        <i class="material-icons">military_tech</i>
-                    </div>
-                    <div class="kpi-content">
-                        <span class="kpi-label">Mayor Aporte Hoy</span>
-                        <div class="kpi-value-row">
-                            <span class="kpi-number-sm" id="kpi-top-operador">--</span>
-                        </div>
-                        <span class="kpi-subtext" id="kpi-top-cantidad">0 cajas</span>
-                    </div>
-                </div>
             </div>
 
-            <!-- Formulario de Anotación Rápida -->
-            <div class="card">
-                <div class="card-title-bar">
-                    <i class="material-icons text-blue">add_circle</i>
-                    <h3>Anotar Cajas Devueltas</h3>
+            <!-- Contenedor Responsive 2 Columnas para Desktop (Formulario + Gráfico) -->
+            <div class="desktop-two-col">
+                <!-- Formulario de Anotación Rápida -->
+                <div class="card">
+                    <div class="card-title-bar">
+                        <i class="material-icons text-blue">add_circle</i>
+                        <h3>Anotar Cajas Devueltas</h3>
+                    </div>
+
+                    <form id="autopick-form">
+                        <!-- Quién anota -->
+                        <div class="form-group">
+                            <label for="autopick-quien">
+                                <i class="material-icons icon-sm">person</i> ¿Quién anota las cajas?
+                            </label>
+                            <input type="text" id="autopick-quien" list="recent-operators-list" placeholder="Nombre o iniciales (ej: Carlos M.)" required autocomplete="off">
+                            <datalist id="recent-operators-list"></datalist>
+
+                            <div class="quick-tags-container" id="quick-operators-container" style="display:none;">
+                                <span class="quick-tags-label">Frecuentes:</span>
+                                <div class="quick-tags-list" id="quick-operators-tags"></div>
+                            </div>
+                        </div>
+
+                        <!-- Cantidad con botones rápidos -->
+                        <div class="form-group">
+                            <label for="autopick-cantidad">
+                                <i class="material-icons icon-sm">inventory_2</i> Número de Cajas Devueltas
+                            </label>
+                            <div class="counter-input-row">
+                                <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(-1)" title="Restar 1">-1</button>
+                                <input type="number" id="autopick-cantidad" min="1" max="9999" value="1" required class="counter-display-input">
+                                <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(1)" title="Sumar 1">+1</button>
+                            </div>
+                            <!-- Presets rápidos -->
+                            <div class="quick-presets-row">
+                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(5)">+5</button>
+                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(10)">+10</button>
+                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(20)">+20</button>
+                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(50)">+50</button>
+                                <button type="button" class="preset-btn reset-preset" onclick="resetAutopickInput()" title="Volver a 1">1</button>
+                            </div>
+                        </div>
+
+                        <!-- Motivo Devolución (Exclusivo: Capacidad de estante vs Producto dañado) -->
+                        <div class="form-group">
+                            <label>
+                                <i class="material-icons icon-sm">category</i> Motivo de Devolución
+                            </label>
+                            <div class="motivo-toggle-group">
+                                <label class="motivo-btn-card">
+                                    <input type="radio" name="autopick-motivo" value="Capacidad de estante" checked>
+                                    <div class="motivo-card-content bg-estante">
+                                        <i class="material-icons text-blue">shelves</i>
+                                        <div class="motivo-card-text">
+                                            <span class="motivo-title">Capacidad de estante</span>
+                                            <span class="motivo-desc">Sin espacio en góndola/pasillo</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="motivo-btn-card">
+                                    <input type="radio" name="autopick-motivo" value="Producto dañado">
+                                    <div class="motivo-card-content bg-danado">
+                                        <i class="material-icons text-red">report_problem</i>
+                                        <div class="motivo-card-text">
+                                            <span class="motivo-title">Producto dañado</span>
+                                            <span class="motivo-desc">Merma, golpe o caja rota</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row-2">
+                            <!-- Turno -->
+                            <div class="form-group">
+                                <label for="autopick-turno">
+                                    <i class="material-icons icon-sm">schedule</i> Turno
+                                </label>
+                                <select id="autopick-turno" required>
+                                    <option value="Mañana">Mañana (07:00 - 15:00)</option>
+                                    <option value="Tarde">Tarde (15:00 - 23:00)</option>
+                                    <option value="Noche">Noche (23:00 - 07:00)</option>
+                                </select>
+                            </div>
+
+                            <!-- Observaciones opcionales -->
+                            <div class="form-group">
+                                <label for="autopick-obs">
+                                    <i class="material-icons icon-sm">edit_note</i> Observación (Opcional)
+                                </label>
+                                <input type="text" id="autopick-obs" placeholder="Ej: Pasillo 3, pallet alto...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="autopick-submit-btn">
+                            <i class="material-icons">save</i>
+                            <span>Guardar Registro de Cajas</span>
+                        </button>
+                    </form>
                 </div>
 
-                <form id="autopick-form">
-                    <!-- Quién anota -->
-                    <div class="form-group">
-                        <label for="autopick-quien">
-                            <i class="material-icons icon-sm">person</i> ¿Quién anota las cajas?
-                        </label>
-                        <input type="text" id="autopick-quien" list="recent-operators-list" placeholder="Nombre o iniciales de quien anota (ej: Carlos M.)" required autocomplete="off">
-                        <datalist id="recent-operators-list"></datalist>
-
-                        <div class="quick-tags-container" id="quick-operators-container" style="display:none;">
-                            <span class="quick-tags-label">Frecuentes:</span>
-                            <div class="quick-tags-list" id="quick-operators-tags"></div>
+                <!-- Gráfico Evolutivo -->
+                <div class="card card-chart">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <i class="material-icons text-blue">show_chart</i>
+                            <h3>Evolutivo de Cajas Devueltas</h3>
                         </div>
-                    </div>
-
-                    <!-- Cantidad con botones rápidos -->
-                    <div class="form-group">
-                        <label for="autopick-cantidad">
-                            <i class="material-icons icon-sm">inventory_2</i> Número de Cajas Devueltas
-                        </label>
-                        <div class="counter-input-row">
-                            <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(-1)" title="Restar 1">-1</button>
-                            <input type="number" id="autopick-cantidad" min="1" max="9999" value="1" required class="counter-display-input">
-                            <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(1)" title="Sumar 1">+1</button>
-                        </div>
-                        <!-- Presets rápidos -->
-                        <div class="quick-presets-row">
-                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(5)">+5</button>
-                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(10)">+10</button>
-                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(20)">+20</button>
-                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(50)">+50</button>
-                            <button type="button" class="preset-btn reset-preset" onclick="resetAutopickInput()" title="Volver a 1">Reiniciar (1)</button>
-                        </div>
-                    </div>
-
-                    <div class="form-row-2">
-                        <!-- Turno -->
-                        <div class="form-group">
-                            <label for="autopick-turno">
-                                <i class="material-icons icon-sm">schedule</i> Turno
-                            </label>
-                            <select id="autopick-turno" required>
-                                <option value="Mañana">Mañana (07:00 - 15:00)</option>
-                                <option value="Tarde">Tarde (15:00 - 23:00)</option>
-                                <option value="Noche">Noche (23:00 - 07:00)</option>
+                        <div class="chart-controls">
+                            <select id="chart-period-select" onchange="renderAutopickChart()">
+                                <option value="hoy">Hoy</option>
+                                <option value="7d">Últimos 7 días</option>
+                                <option value="todo">Histórico completo</option>
+                            </select>
+                            <select id="chart-type-select" onchange="renderAutopickChart()">
+                                <option value="acumulado">Curva Acumulativa</option>
+                                <option value="motivo">Estante vs Dañado</option>
+                                <option value="bloques">Por Horas / Días</option>
+                                <option value="operador">Por Colaborador</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Motivo Devolución -->
-                        <div class="form-group">
-                            <label for="autopick-motivo">
-                                <i class="material-icons icon-sm">assignment_return</i> Motivo Devolución
-                            </label>
-                            <select id="autopick-motivo">
-                                <option value="Rechazo cliente">Rechazo de cliente</option>
-                                <option value="Pedido cancelado">Pedido cancelado</option>
-                                <option value="Cliente ausente">Cliente ausente / Dirección errónea</option>
-                                <option value="Incompleto / Desfase">Incompleto / Desfase de armado</option>
-                                <option value="Cadena de frío / Calidad">Cadena de frío / Calidad</option>
-                                <option value="Sobrante de ruta">Sobrante de ruta</option>
-                                <option value="Otro">Otro motivo</option>
-                            </select>
+                    <div class="chart-container-wrapper">
+                        <canvas id="autopickChart"></canvas>
+                    </div>
+
+                    <div class="chart-legend-stats" id="chart-legend-stats">
+                        <div class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:#0071ce;"></span>
+                            <span>Curva en tiempo real según cada anotación</span>
                         </div>
-                    </div>
-
-                    <!-- Observaciones opcionales -->
-                    <div class="form-group">
-                        <label for="autopick-obs">
-                            <i class="material-icons icon-sm">edit_note</i> Observación (Opcional)
-                        </label>
-                        <input type="text" id="autopick-obs" placeholder="Ej: 3 de lácteos, 5 secos, o número de orden...">
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="autopick-submit-btn">
-                        <i class="material-icons">save</i>
-                        <span>Guardar Registro de Cajas</span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Gráfico Evolutivo -->
-            <div class="card">
-                <div class="chart-header">
-                    <div class="chart-title-group">
-                        <i class="material-icons text-blue">show_chart</i>
-                        <h3>Evolutivo de Cajas Devueltas</h3>
-                    </div>
-                    <div class="chart-controls">
-                        <select id="chart-period-select" onchange="renderAutopickChart()">
-                            <option value="hoy">Hoy</option>
-                            <option value="7d">Últimos 7 días</option>
-                            <option value="todo">Histórico completo</option>
-                        </select>
-                        <select id="chart-type-select" onchange="renderAutopickChart()">
-                            <option value="acumulado">Curva Acumulativa</option>
-                            <option value="bloques">Por Horas / Días (Barras)</option>
-                            <option value="operador">Por Colaborador</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="chart-container-wrapper">
-                    <canvas id="autopickChart"></canvas>
-                </div>
-
-                <div class="chart-legend-stats" id="chart-legend-stats">
-                    <div class="chart-legend-item">
-                        <span class="chart-legend-dot" style="background:#0071ce;"></span>
-                        <span>Curva en tiempo real según cada anotación</span>
                     </div>
                 </div>
             </div>
@@ -622,7 +642,10 @@ git push -u origin main</pre>
                 </div>
                 <div class="form-group">
                     <label for="edit-record-motivo">Motivo</label>
-                    <input type="text" id="edit-record-motivo">
+                    <select id="edit-record-motivo" required>
+                        <option value="Capacidad de estante">Capacidad de estante</option>
+                        <option value="Producto dañado">Producto dañado</option>
+                    </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 16px;">
                     <button type="button" class="btn-sm btn-outline" style="flex: 1; justify-content: center; padding: 12px;" onclick="closeEditModal()">Cancelar</button>
