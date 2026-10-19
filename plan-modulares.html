@@ -2,171 +2,992 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Plan de Acción · Módulo Diario</title>
+<title>Plan de Recuperacion - Indicador Modulares</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .tab-btn { padding: 0.5rem 1rem; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; color: #64748b; background: #e2e8f0; cursor: pointer; }
+  .tab-btn-active { background: white; color: #1e293b; border-bottom: 3px solid #2563eb; }
+  .tab-panel.hidden { display: none; }
+  .task-check:checked ~ td { text-decoration: line-through; }
+  tr:has(.task-check:checked) { opacity: 0.45; }
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans">
-  <div class="max-w-5xl mx-auto px-6 py-10">
+  <header class="bg-slate-900 text-white">
+    <div class="max-w-6xl mx-auto px-6 py-6">
+      <h1 class="text-2xl font-bold">Plan de Recuperacion del Indicador de Modulares</h1>
+      <p class="text-slate-300 text-sm mt-1">Tienda 142 - Talca Terminal &middot; Generado 19-10-2026 &middot; Inicio del plan: 20-10 (Martes)</p>
+    </div>
+  </header>
 
-    <!-- HEADER -->
-    <header class="mb-8">
-      <h1 class="text-3xl font-bold text-blue-700"> Plan de Acción — Módulo Diario</h1>
-      <p class="text-slate-500 mt-1">Rotación de 1 responsable por día entre 3 personas · Sprint de 5 días hábiles</p>
-      <p class="text-xs text-slate-400 mt-2">
-        Fuente de referencia: <a class="underline text-blue-500" href="https://app.powerbi.com/groups/me/apps/3526f2ff-7a0f-4bab-9ed1-6f586aea2d6a/reports/66b3807c-4837-4f67-8583-de00b4d184e0/ReportSection" target="_blank">Reporte Power BI vinculado</a>
-        — pendiente de cargar datos reales (CSV/export) para reemplazar las cifras de ejemplo.
-      </p>
-    </header>
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-    <!-- EXECUTIVE SUMMARY (TOP) -->
-    <section class="bg-blue-700 text-white rounded-xl p-6 mb-8 shadow">
-      <h2 class="text-xl font-semibold mb-2"> Resumen Ejecutivo</h2>
-      <ul class="space-y-1 text-blue-50 list-disc list-inside">
-        <li>Equipo de <strong>3 personas</strong>, rotando el módulo diario (1 responsable por día).</li>
-        <li>Duración del sprint: <strong>5 días hábiles</strong>, del <strong>lunes 19</strong> al <strong>viernes 23 de octubre de 2026</strong>.</li>
-        <li>Meta: completar el 100% del módulo asignado al cierre del viernes 23/10/2026.</li>
-        <li>Estado actual: <strong>0% avanzado</strong> — arranca hoy lunes 19/10.</li>
+    <section class="bg-blue-50 border border-blue-200 rounded-xl p-5">
+      <h2 class="font-bold text-blue-900 mb-2">Resumen ejecutivo</h2>
+      <ul class="list-disc list-inside text-sm text-blue-900 space-y-1">
+        <li><strong>51 modulares</strong> pendientes de confirmar, de los cuales <strong>28 ya estan atrasados</strong> y <strong>23 son a futuro</strong>.</li>
+        <li>Equipo de 3 personas, <strong>1 modular diario por persona</strong> (60 min c/u, escenario conservador).</li>
+        <li>El plan arranca <strong>manana, 20-10 (Martes)</strong>. Orden de ataque: del mas atrasado al mas futuro, repartido parejo entre las 3 personas.</li>
+        <li><strong>Fecha estimada de indicador 100% al dia: 11-11 (Miercoles).</strong></li>
       </ul>
     </section>
 
-    <!-- EDITABLE NAMES NOTE -->
-    <section class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-8 text-sm text-amber-800">
-       <strong>Nota:</strong> Reemplaza "Persona 1 / 2 / 3" abajo por los nombres reales del equipo.
-      Las metas por día son genéricas (placeholder) hasta tener el export real del reporte de Power BI.
-    </section>
-
-    <!-- DAILY SCHEDULE -->
-    <section class="mb-8">
-      <h2 class="text-xl font-semibold mb-4 text-blue-700"> Calendario Diario (1 modular por dia, responsable rotativo)</h2>
-
-      <div class="space-y-4">
-
-        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
-          <div class="flex flex-wrap justify-between items-center mb-2">
-            <h3 class="text-lg font-bold text-slate-800">Lunes 19/10/2026</h3>
-            <span class="text-blue-600 font-semibold">Avance acumulado: 20%</span>
-          </div>
-          <p class="text-sm text-slate-500 mb-3">Dia 1 de 5</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 1</span></div>
-            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 1</span></div>
-            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Dataset validado</span></div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
-          <div class="flex flex-wrap justify-between items-center mb-2">
-            <h3 class="text-lg font-bold text-slate-800">Martes 20/10/2026</h3>
-            <span class="text-blue-600 font-semibold">Avance acumulado: 40%</span>
-          </div>
-          <p class="text-sm text-slate-500 mb-3">Dia 2 de 5</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 2</span></div>
-            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 2</span></div>
-            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Reporte de QA</span></div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
-          <div class="flex flex-wrap justify-between items-center mb-2">
-            <h3 class="text-lg font-bold text-slate-800">Miercoles 21/10/2026</h3>
-            <span class="text-blue-600 font-semibold">Avance acumulado: 60%</span>
-          </div>
-          <p class="text-sm text-slate-500 mb-3">Dia 3 de 5</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 3</span></div>
-            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 3</span></div>
-            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Modulo en progreso (v1)</span></div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
-          <div class="flex flex-wrap justify-between items-center mb-2">
-            <h3 class="text-lg font-bold text-slate-800">Jueves 22/10/2026</h3>
-            <span class="text-blue-600 font-semibold">Avance acumulado: 80%</span>
-          </div>
-          <p class="text-sm text-slate-500 mb-3">Dia 4 de 5</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 4</span></div>
-            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 1</span></div>
-            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Modulo revisado (v2)</span></div>
-          </div>
-        </div>
-
-        <div class="bg-green-50 rounded-xl shadow p-5 border-l-4 border-green-500">
-          <div class="flex flex-wrap justify-between items-center mb-2">
-            <h3 class="text-lg font-bold text-slate-800">Viernes 23/10/2026</h3>
-            <span class="text-green-700 font-bold">Avance acumulado: 100%</span>
-          </div>
-          <p class="text-sm text-slate-500 mb-3">Dia 5 de 5 - CIERRE DEL SPRINT</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 5</span></div>
-            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 2</span></div>
-            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold text-green-700">Modulo COMPLETO</span></div>
-          </div>
-        </div>
-
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-slate-800">51</p>
+        <p class="text-xs text-slate-500 mt-1">Modulares pendientes</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-red-600">28</p>
+        <p class="text-xs text-slate-500 mt-1">Atrasados (SIN CONFIRMAR)</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-emerald-600">23</p>
+        <p class="text-xs text-slate-500 mt-1">A futuro (FUTURO)</p>
+      </div>
+      <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-blue-600">17</p>
+        <p class="text-xs text-slate-500 mt-1">Dias habiles para cerrar todo</p>
       </div>
     </section>
 
-    <!-- CHART -->
-    <section class="bg-white rounded-xl shadow p-6 mb-8">
-      <h2 class="text-xl font-semibold mb-4 text-blue-700"> Avance Proyectado</h2>
-      <div style="height:320px;">
-        <canvas id="progressChart"></canvas>
+    <section class="bg-white rounded-xl shadow p-5">
+      <h2 class="font-bold mb-3">Burndown proyectado (modulares pendientes por dia)</h2>
+      <div style="height: 280px;">
+        <canvas id="burndownChart"></canvas>
       </div>
     </section>
 
-    <!-- REFERENCE MESSAGE TO SEND -->
-    <section class="bg-slate-900 text-slate-100 rounded-xl p-6 mb-8 shadow">
-      <h2 class="text-xl font-semibold mb-3 text-amber-300"> Mensaje de Referencia (listo para enviar)</h2>
-      <p class="text-sm text-slate-300 mb-2">Copia y pega esto en tu chat/correo de seguimiento:</p>
-      <div class="bg-slate-800 rounded-lg p-4 font-mono text-sm leading-relaxed">
-        "Hola equipo , arrancamos hoy lunes 19/10 el módulo diario con rotación de responsable
-        (Persona 1, 2 y 3, uno por día). Estimamos estar <strong>100% completos el viernes 23 de
-        octubre de 2026</strong>, al cierre del día. Cualquier bloqueo se escala el mismo día para
-        no mover la fecha de entrega."
+    <section class="bg-white rounded-xl shadow p-5">
+      <h2 class="font-bold mb-4">Checklist diario por persona</h2>
+      <div class="flex gap-1 border-b border-slate-200">
+      <button class="tab-btn tab-btn-active" data-target="tab-Persona1">Persona 1
+        <span class="text-xs opacity-75">(17)</span>
+      </button>
+      <button class="tab-btn " data-target="tab-Persona2">Persona 2
+        <span class="text-xs opacity-75">(17)</span>
+      </button>
+      <button class="tab-btn " data-target="tab-Persona3">Persona 3
+        <span class="text-xs opacity-75">(17)</span>
+      </button>
+      </div>
+      <div class="pt-4">
+    <div id="tab-Persona1" class="tab-panel ">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Persona 1</h3>
+          <p class="text-sm text-slate-500">17 modulares asignados &middot; termina 11-11 (Miercoles)</p>
+        </div>
+        <div class="w-48">
+          <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div class="progress-bar h-2 bg-blue-600 rounded-full" data-person="Persona 1" style="width:0%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-1 text-right progress-label" data-person="Persona 1">0 / 17 hechos</p>
+        </div>
+      </div>
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="bg-slate-800 text-white">
+            <th class="px-4 py-2">OK</th>
+            <th class="px-4 py-2">Dpto</th>
+            <th class="px-4 py-2">SubGrupo</th>
+            <th class="px-4 py-2">Modular</th>
+            <th class="px-4 py-2">Activacion original</th>
+            <th class="px-4 py-2">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 1 &middot; 20-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-90-190-MAN_Y_MARG" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">90</td>
+          <td class="px-4 py-2 text-slate-600">190</td>
+          <td class="px-4 py-2 font-medium text-slate-800">MAN Y MARG</td>
+          <td class="px-4 py-2 text-slate-500">04-08-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">76d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 2 &middot; 21-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-20-187-TEXTIL_MESA" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">20</td>
+          <td class="px-4 py-2 text-slate-600">187</td>
+          <td class="px-4 py-2 font-medium text-slate-800">TEXTIL MESA</td>
+          <td class="px-4 py-2 text-slate-500">22-08-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">58d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 3 &middot; 22-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-26-182-PANALES" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">26</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PANALES</td>
+          <td class="px-4 py-2 text-slate-500">30-09-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">19d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 4 &middot; 23-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-92-183-MAR_Y_PESC_CONSERVA" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">MAR Y PESC CONSERVA</td>
+          <td class="px-4 py-2 text-slate-500">05-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">14d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 5 &middot; 26-10 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-92-183-SABORIZANTE" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">SABORIZANTE</td>
+          <td class="px-4 py-2 text-slate-500">07-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">12d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 6 &middot; 27-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-4-182-TOALLAS_DE_PAPEL" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">4</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">TOALLAS DE PAPEL</td>
+          <td class="px-4 py-2 text-slate-500">13-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">6d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 7 &middot; 28-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-92-183-ENDULZANTE" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">ENDULZANTE</td>
+          <td class="px-4 py-2 text-slate-500">13-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">6d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 8 &middot; 29-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-13-182-ACC_HOGAR" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">ACC HOGAR</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 9 &middot; 30-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-13-182-LIMPIADORES_MASCOTAS" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">LIMPIADORES MASCOTAS</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 10 &middot; 02-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-14-187-CLIP_STRIP" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">14</td>
+          <td class="px-4 py-2 text-slate-600">187</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CLIP STRIP</td>
+          <td class="px-4 py-2 text-slate-500">18-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">1d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 11 &middot; 03-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-91-194-HELADOS" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">91</td>
+          <td class="px-4 py-2 text-slate-600">194</td>
+          <td class="px-4 py-2 font-medium text-slate-800">HELADOS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 12 &middot; 04-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-92-183-CEREALES" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CEREALES</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 13 &middot; 05-11 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-92-183-GALLETAS" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">GALLETAS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 14 &middot; 06-11 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-96-183-ESPUMANTES" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">96</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">ESPUMANTES</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 15 &middot; 09-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-2-182-SHAMPOO" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">2</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">SHAMPOO</td>
+          <td class="px-4 py-2 text-slate-500">21-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 2d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 16 &middot; 10-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-53-184-CLIP_STRIP" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">53</td>
+          <td class="px-4 py-2 text-slate-600">184</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CLIP STRIP</td>
+          <td class="px-4 py-2 text-slate-500">26-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 7d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 17 &middot; 11-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona1-95-183-FUNCIONALES" data-person="Persona 1">
+          </td>
+          <td class="px-4 py-2 text-slate-600">95</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">FUNCIONALES</td>
+          <td class="px-4 py-2 text-slate-500">27-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 8d</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab-Persona2" class="tab-panel hidden">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Persona 2</h3>
+          <p class="text-sm text-slate-500">17 modulares asignados &middot; termina 11-11 (Miercoles)</p>
+        </div>
+        <div class="w-48">
+          <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div class="progress-bar h-2 bg-blue-600 rounded-full" data-person="Persona 2" style="width:0%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-1 text-right progress-label" data-person="Persona 2">0 / 17 hechos</p>
+        </div>
+      </div>
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="bg-slate-800 text-white">
+            <th class="px-4 py-2">OK</th>
+            <th class="px-4 py-2">Dpto</th>
+            <th class="px-4 py-2">SubGrupo</th>
+            <th class="px-4 py-2">Modular</th>
+            <th class="px-4 py-2">Activacion original</th>
+            <th class="px-4 py-2">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 1 &middot; 20-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-3-184-LIBRERIA" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">3</td>
+          <td class="px-4 py-2 text-slate-600">184</td>
+          <td class="px-4 py-2 font-medium text-slate-800">LIBRERIA</td>
+          <td class="px-4 py-2 text-slate-500">18-08-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">62d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 2 &middot; 21-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-13-182-ESPONJAS_Y_VIRUTILLAS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">ESPONJAS Y VIRUTILLAS</td>
+          <td class="px-4 py-2 text-slate-500">22-09-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">27d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 3 &middot; 22-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-96-183-COOLER_CERVEZAS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">96</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">COOLER CERVEZAS</td>
+          <td class="px-4 py-2 text-slate-500">30-09-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">19d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 4 &middot; 23-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-83-194-PESC" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">83</td>
+          <td class="px-4 py-2 text-slate-600">194</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PESC</td>
+          <td class="px-4 py-2 text-slate-500">06-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">13d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 5 &middot; 26-10 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-96-183-COCKTAIL" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">96</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">COCKTAIL</td>
+          <td class="px-4 py-2 text-slate-500">07-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">12d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 6 &middot; 27-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-26-182-PUERICULTURA" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">26</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PUERICULTURA</td>
+          <td class="px-4 py-2 text-slate-500">13-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">6d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 7 &middot; 28-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-92-183-NATURALES" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">NATURALES</td>
+          <td class="px-4 py-2 text-slate-500">13-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">6d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 8 &middot; 29-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-13-182-GUANTES" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">GUANTES</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 9 &middot; 30-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-13-182-PANOS_SECOS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PANOS SECOS</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 10 &middot; 02-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-82-183-SCO" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">82</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">SCO</td>
+          <td class="px-4 py-2 text-slate-500">19-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Activa hoy</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 11 &middot; 03-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-91-194-PLATOS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">91</td>
+          <td class="px-4 py-2 text-slate-600">194</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PLATOS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 12 &middot; 04-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-92-183-CFS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CFS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 13 &middot; 05-11 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-92-183-PASTAS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PASTAS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 14 &middot; 06-11 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-97-190-PLATOS_PREPARADOS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">97</td>
+          <td class="px-4 py-2 text-slate-600">190</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PLATOS PREPARADOS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 15 &middot; 09-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-95-183-AGUAS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">95</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">AGUAS</td>
+          <td class="px-4 py-2 text-slate-500">21-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 2d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 16 &middot; 10-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-8-186-ACC_GATO__Y_OTRAS_MASCOTAS" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">8</td>
+          <td class="px-4 py-2 text-slate-600">186</td>
+          <td class="px-4 py-2 font-medium text-slate-800">ACC GATO  Y OTRAS MASCOTAS</td>
+          <td class="px-4 py-2 text-slate-500">27-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 8d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 17 &middot; 11-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona2-2-182-AFEITADO" data-person="Persona 2">
+          </td>
+          <td class="px-4 py-2 text-slate-600">2</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">AFEITADO</td>
+          <td class="px-4 py-2 text-slate-500">28-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 9d</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab-Persona3" class="tab-panel hidden">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Persona 3</h3>
+          <p class="text-sm text-slate-500">17 modulares asignados &middot; termina 11-11 (Miercoles)</p>
+        </div>
+        <div class="w-48">
+          <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div class="progress-bar h-2 bg-blue-600 rounded-full" data-person="Persona 3" style="width:0%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-1 text-right progress-label" data-person="Persona 3">0 / 17 hechos</p>
+        </div>
+      </div>
+      <table class="w-full text-sm text-left">
+        <thead>
+          <tr class="bg-slate-800 text-white">
+            <th class="px-4 py-2">OK</th>
+            <th class="px-4 py-2">Dpto</th>
+            <th class="px-4 py-2">SubGrupo</th>
+            <th class="px-4 py-2">Modular</th>
+            <th class="px-4 py-2">Activacion original</th>
+            <th class="px-4 py-2">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 1 &middot; 20-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-20-187-CLIP_STRIP" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">20</td>
+          <td class="px-4 py-2 text-slate-600">187</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CLIP STRIP</td>
+          <td class="px-4 py-2 text-slate-500">21-08-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">59d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 2 &middot; 21-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-26-182-WIPES" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">26</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">WIPES</td>
+          <td class="px-4 py-2 text-slate-500">22-09-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">27d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 3 &middot; 22-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-LB" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">LB</td>
+          <td class="px-4 py-2 text-slate-500">05-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">14d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 4 &middot; 23-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-SOPAS" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">SOPAS</td>
+          <td class="px-4 py-2 text-slate-500">06-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">13d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 5 &middot; 26-10 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-TE_Y_HIERBAS" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">TE Y HIERBAS</td>
+          <td class="px-4 py-2 text-slate-500">08-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">11d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 6 &middot; 27-10 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-BOM" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">BOM</td>
+          <td class="px-4 py-2 text-slate-500">13-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">6d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 7 &middot; 28-10 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-53-184-CUMPLEANOS" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">53</td>
+          <td class="px-4 py-2 text-slate-600">184</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CUMPLEANOS</td>
+          <td class="px-4 py-2 text-slate-500">14-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">5d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 8 &middot; 29-10 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-13-182-LIMP_BAÑO" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">LIMP BAÑO</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 9 &middot; 30-10 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-13-182-PULIDORES_Y_ANTIGRASAS" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PULIDORES Y ANTIGRASAS</td>
+          <td class="px-4 py-2 text-slate-500">16-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">3d atrasado</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 10 &middot; 02-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-81-191-PAN_INDUSTRIAL" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">81</td>
+          <td class="px-4 py-2 text-slate-600">191</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PAN INDUSTRIAL</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 11 &middot; 03-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-CAFE" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">CAFE</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 12 &middot; 04-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-DRESSING" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">DRESSING</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 13 &middot; 05-11 (Jueves) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-92-183-PLATOS_INST" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">92</td>
+          <td class="px-4 py-2 text-slate-600">183</td>
+          <td class="px-4 py-2 font-medium text-slate-800">PLATOS INST</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 14 &middot; 06-11 (Viernes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-98-191-TORTAS_Y_TARTAS" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">98</td>
+          <td class="px-4 py-2 text-slate-600">191</td>
+          <td class="px-4 py-2 font-medium text-slate-800">TORTAS Y TARTAS</td>
+          <td class="px-4 py-2 text-slate-500">20-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 1d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 15 &middot; 09-11 (Lunes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-2-182-BANO" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">2</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">BANO</td>
+          <td class="px-4 py-2 text-slate-500">26-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 7d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 16 &middot; 10-11 (Martes) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-13-182-DETERGENTES" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">DETERGENTES</td>
+          <td class="px-4 py-2 text-slate-500">27-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 8d</span></td>
+        </tr>
+        <tr class="bg-slate-100">
+          <td colspan="5" class="px-4 py-2 font-bold text-slate-700">
+            Dia 17 &middot; 11-11 (Miercoles) &middot; 1 modulares
+          </td>
+        </tr>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="px-4 py-2">
+            <input type="checkbox" class="task-check w-4 h-4 accent-blue-600" data-id="Persona3-13-182-BLANQUEAMIENTO" data-person="Persona 3">
+          </td>
+          <td class="px-4 py-2 text-slate-600">13</td>
+          <td class="px-4 py-2 text-slate-600">182</td>
+          <td class="px-4 py-2 font-medium text-slate-800">BLANQUEAMIENTO</td>
+          <td class="px-4 py-2 text-slate-500">28-10-2026</td>
+          <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">en 9d</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
       </div>
     </section>
 
-    <!-- EXECUTIVE INSIGHTS (BOTTOM) -->
-    <section class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-      <h2 class="text-xl font-semibold mb-2 text-blue-700"> Conclusiones y Próximos Pasos</h2>
-      <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
-        <li>Fecha de finalización comprometida: <strong>viernes 23 de octubre de 2026</strong>.</li>
-        <li>Una sola persona es dueña del módulo cada día — evita duplicar esfuerzo y deja claro quién reporta avance.</li>
-        <li>Pendiente: reemplazar metas genéricas con datos reales exportados del reporte de Power BI vinculado arriba.</li>
-        <li>Pendiente: confirmar nombres reales del equipo (Persona 1/2/3).</li>
+    <section class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+      <h2 class="font-bold text-amber-900 mb-2">Insights finales</h2>
+      <ul class="list-disc list-inside text-sm text-amber-900 space-y-1">
+        <li>Priorizar siempre lo mas atrasado primero: es lo que mas rapido mueve la aguja del indicador.</li>
+        <li>La persona que termine antes su bloque diario puede sumarse a ayudar a las otras para cerrar mas rapido.</li>
+        <li>El check se guarda en este navegador (localStorage); si se abre en otro equipo no se comparte el avance.</li>
       </ul>
     </section>
+  </main>
 
-  </div>
+  <script>
+    const burndownCtx = document.getElementById('burndownChart');
+    new Chart(burndownCtx, {
+      type: 'line',
+      data: {
+        labels: ["Hoy (19-10 (Lunes))", "20-10 (Martes)", "21-10 (Miercoles)", "22-10 (Jueves)", "23-10 (Viernes)", "26-10 (Lunes)", "27-10 (Martes)", "28-10 (Miercoles)", "29-10 (Jueves)", "30-10 (Viernes)", "02-11 (Lunes)", "03-11 (Martes)", "04-11 (Miercoles)", "05-11 (Jueves)", "06-11 (Viernes)", "09-11 (Lunes)", "10-11 (Martes)", "11-11 (Miercoles)"],
+        datasets: [{
+          label: 'Modulares pendientes',
+          data: [51, 48, 45, 42, 39, 36, 33, 30, 27, 24, 21, 18, 15, 12, 9, 6, 3, 0],
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.1)',
+          fill: true,
+          tension: 0.2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
 
-<script>
-  const ctx = document.getElementById('progressChart');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Lun 19/10', 'Mar 20/10', 'Mié 21/10', 'Jue 22/10', 'Vie 23/10'],
-      datasets: [{
-        label: 'Avance acumulado (%)',
-        data: [20, 40, 60, 80, 100],
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37,99,235,0.15)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 5,
-        pointBackgroundColor: '#2563eb'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } },
-      plugins: { legend: { display: false } }
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-btn-active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        btn.classList.add('tab-btn-active');
+        document.getElementById(btn.dataset.target).classList.remove('hidden');
+      });
+    });
+
+    const STORAGE_KEY = 'modulares_plan_checks';
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+    function updateProgress(persona) {
+      const checks = document.querySelectorAll(`.task-check[data-person="${persona}"]`);
+      const total = checks.length;
+      const done = Array.from(checks).filter(c => c.checked).length;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      document.querySelector(`.progress-bar[data-person="${persona}"]`).style.width = pct + '%';
+      document.querySelector(`.progress-label[data-person="${persona}"]`).textContent = `${done} / ${total} hechos`;
     }
-  });
-</script>
+
+    document.querySelectorAll('.task-check').forEach(chk => {
+      chk.checked = !!saved[chk.dataset.id];
+      chk.addEventListener('change', () => {
+        saved[chk.dataset.id] = chk.checked;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        updateProgress(chk.dataset.person);
+      });
+    });
+
+    ["Persona 1", "Persona 2", "Persona 3"].forEach(updateProgress);
+  </script>
 </body>
 </html>
