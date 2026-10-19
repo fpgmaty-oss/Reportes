@@ -3,98 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Reporte de Problemas</title>
+    <title>Reportes & Control de Operaciones</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Chart.js para el gráfico evolutivo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK para sincronización multi-dispositivo en tiempo real (GitHub Pages) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
+    <!-- Top Header -->
     <header class="app-header">
-        <div class="logo">Reportes</div>
-        <i class="material-icons">menu</i>
+        <div class="header-left">
+            <div class="logo">
+                <i class="material-icons">dashboard</i>
+                <span>Reportes</span>
+            </div>
+            <div class="header-badge" id="online-status">
+                <span class="status-dot"></span> Operativo
+            </div>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="icon-header-btn" title="Compartir Resumen" onclick="shareQuickSummary()">
+                <i class="material-icons">share</i>
+            </button>
+            <button type="button" class="icon-header-btn" id="menu-toggle-btn" title="Menú de opciones" onclick="toggleDrawer()">
+                <i class="material-icons">menu</i>
+            </button>
+        </div>
     </header>
 
+    <!-- Main Views Container -->
     <main id="main-content">
-        <!-- Main Menu -->
+        <!-- ===============================================================
+             1. Main Menu (Home View)
+             =============================================================== -->
         <div id="home-view" class="view active">
-            <h1 class="page-title">¿Qué deseas reportar?</h1>
+            <div class="home-welcome">
+                <h1 class="page-title">Panel de Control & Reportes</h1>
+                <p class="page-subtitle">Selecciona una opción para registrar o consultar el estado de tienda</p>
+            </div>
+
             <div class="card-grid">
-                <button class="square-btn bg-blue" onclick="navigateTo('vencimiento-view')">
+                <!-- BOTÓN PRINCIPAL NUEVO: Cajas Autopick Devueltas -->
+                <button type="button" class="square-btn bg-purple" onclick="navigateTo('autopick-view')">
+                    <i class="material-icons">all_inbox</i>
+                    <div class="square-btn-content">
+                        <span class="square-btn-title">Cajas Autopick Devueltas</span>
+                        <span class="square-btn-sub">Contador, anotación por operador y gráfico evolutivo</span>
+                    </div>
+                    <span class="square-btn-badge" id="home-autopick-badge">
+                        <span id="home-autopick-count">0</span> hoy
+                    </span>
+                </button>
+
+                <!-- Problemas Vencimiento -->
+                <button type="button" class="square-btn bg-blue" onclick="navigateTo('vencimiento-view')">
                     <i class="material-icons">event_busy</i>
-                    <span>Problemas Vencimiento</span>
+                    <div class="square-btn-content">
+                        <span class="square-btn-title">Problemas Vencimiento</span>
+                        <span class="square-btn-sub">Control de mermas y productos próximos a vencer</span>
+                    </div>
                 </button>
-                <button class="square-btn bg-yellow" onclick="navigateTo('abastecimiento-view')">
+
+                <!-- Problemas Abastecimiento -->
+                <button type="button" class="square-btn bg-yellow" onclick="navigateTo('abastecimiento-view')">
                     <i class="material-icons">inventory_2</i>
-                    <span>Problemas Abastecimiento</span>
+                    <div class="square-btn-content">
+                        <span class="square-btn-title">Problemas Abastecimiento</span>
+                        <span class="square-btn-sub">Quiebres de stock en sala y reposición pendiente</span>
+                    </div>
                 </button>
-                <button class="square-btn bg-green" onclick="navigateTo('modulares-view')">
+
+                <!-- Planes de Acción -->
+                <button type="button" class="square-btn bg-green" onclick="navigateTo('modulares-view')">
                     <i class="material-icons">assignment_turned_in</i>
-                    <span>Planes de Acción</span>
+                    <div class="square-btn-content">
+                        <span class="square-btn-title">Planes de Acción (Modulares)</span>
+                        <span class="square-btn-sub">Seguimiento de cumplimiento y avance por persona</span>
+                    </div>
                 </button>
             </div>
         </div>
 
-        <!-- Vencimiento Form -->
+        <!-- ===============================================================
+             2. Cajas Autopick Devueltas View (NUEVO & COMPLETO)
+             =============================================================== -->
+        <div id="autopick-view" class="view">
+            <!-- View Header -->
+            <div class="view-header">
+                <div class="view-header-left">
+                    <button type="button" class="back-btn" onclick="navigateTo('home-view')" title="Volver al menú">
+                        <i class="material-icons">arrow_back</i>
+                    </button>
+                    <div class="view-title-group">
+                        <h2>Cajas Autopick Devueltas</h2>
+                        <span class="view-subtitle">Registro por colaborador y evolutivo temporal</span>
+                    </div>
+                </div>
+                <div class="view-actions">
+                    <button type="button" class="btn-sm btn-outline" onclick="exportAutopickCSV()" title="Exportar a Excel (CSV)">
+                        <i class="material-icons">file_download</i> Excel
+                    </button>
+                    <button type="button" class="btn-sm btn-whatsapp" onclick="shareAutopickWhatsApp()" title="Enviar resumen por WhatsApp">
+                        <i class="material-icons">send</i> WhatsApp
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de Estado en Tiempo Real -->
+            <div class="sync-status-bar">
+                <div class="sync-indicator">
+                    <span class="status-dot pulsating"></span>
+                    <span id="sync-status-text">Visualización en Vivo (Sin necesidad de exportar)</span>
+                </div>
+                <button type="button" class="btn-xs" onclick="syncNow()" title="Actualizar datos">
+                    <i class="material-icons" style="font-size: 14px;">sync</i> Actualizar ahora
+                </button>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="kpi-grid">
+                <div class="kpi-card highlight-kpi">
+                    <div class="kpi-icon-wrap bg-blue-subtle">
+                        <i class="material-icons">all_inbox</i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Cajas Devueltas Hoy</span>
+                        <div class="kpi-value-row">
+                            <span class="kpi-number" id="kpi-cajas-hoy">0</span>
+                            <span class="kpi-unit">cajas</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-cajas-hoy-sub">Sin registros hoy</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrap bg-green-subtle">
+                        <i class="material-icons">trending_up</i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Total Histórico</span>
+                        <div class="kpi-value-row">
+                            <span class="kpi-number" id="kpi-cajas-total">0</span>
+                            <span class="kpi-unit">cajas</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-total-registros">0 anotaciones</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrap bg-yellow-subtle">
+                        <i class="material-icons">schedule</i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Último Ingreso</span>
+                        <div class="kpi-value-row">
+                            <span class="kpi-number-sm" id="kpi-ultimo-quien">--</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-ultimo-detalle">Esperando registros</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon-wrap bg-purple-subtle">
+                        <i class="material-icons">military_tech</i>
+                    </div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Mayor Aporte Hoy</span>
+                        <div class="kpi-value-row">
+                            <span class="kpi-number-sm" id="kpi-top-operador">--</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-top-cantidad">0 cajas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Anotación Rápida -->
+            <div class="card">
+                <div class="card-title-bar">
+                    <i class="material-icons text-blue">add_circle</i>
+                    <h3>Anotar Cajas Devueltas</h3>
+                </div>
+
+                <form id="autopick-form">
+                    <!-- Quién anota -->
+                    <div class="form-group">
+                        <label for="autopick-quien">
+                            <i class="material-icons icon-sm">person</i> ¿Quién anota las cajas?
+                        </label>
+                        <input type="text" id="autopick-quien" list="recent-operators-list" placeholder="Nombre o iniciales de quien anota (ej: Carlos M.)" required autocomplete="off">
+                        <datalist id="recent-operators-list"></datalist>
+
+                        <div class="quick-tags-container" id="quick-operators-container" style="display:none;">
+                            <span class="quick-tags-label">Frecuentes:</span>
+                            <div class="quick-tags-list" id="quick-operators-tags"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cantidad con botones rápidos -->
+                    <div class="form-group">
+                        <label for="autopick-cantidad">
+                            <i class="material-icons icon-sm">inventory_2</i> Número de Cajas Devueltas
+                        </label>
+                        <div class="counter-input-row">
+                            <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(-1)" title="Restar 1">-1</button>
+                            <input type="number" id="autopick-cantidad" min="1" max="9999" value="1" required class="counter-display-input">
+                            <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(1)" title="Sumar 1">+1</button>
+                        </div>
+                        <!-- Presets rápidos -->
+                        <div class="quick-presets-row">
+                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(5)">+5</button>
+                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(10)">+10</button>
+                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(20)">+20</button>
+                            <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(50)">+50</button>
+                            <button type="button" class="preset-btn reset-preset" onclick="resetAutopickInput()" title="Volver a 1">Reiniciar (1)</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row-2">
+                        <!-- Turno -->
+                        <div class="form-group">
+                            <label for="autopick-turno">
+                                <i class="material-icons icon-sm">schedule</i> Turno
+                            </label>
+                            <select id="autopick-turno" required>
+                                <option value="Mañana">Mañana (07:00 - 15:00)</option>
+                                <option value="Tarde">Tarde (15:00 - 23:00)</option>
+                                <option value="Noche">Noche (23:00 - 07:00)</option>
+                            </select>
+                        </div>
+
+                        <!-- Motivo Devolución -->
+                        <div class="form-group">
+                            <label for="autopick-motivo">
+                                <i class="material-icons icon-sm">assignment_return</i> Motivo Devolución
+                            </label>
+                            <select id="autopick-motivo">
+                                <option value="Rechazo cliente">Rechazo de cliente</option>
+                                <option value="Pedido cancelado">Pedido cancelado</option>
+                                <option value="Cliente ausente">Cliente ausente / Dirección errónea</option>
+                                <option value="Incompleto / Desfase">Incompleto / Desfase de armado</option>
+                                <option value="Cadena de frío / Calidad">Cadena de frío / Calidad</option>
+                                <option value="Sobrante de ruta">Sobrante de ruta</option>
+                                <option value="Otro">Otro motivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Observaciones opcionales -->
+                    <div class="form-group">
+                        <label for="autopick-obs">
+                            <i class="material-icons icon-sm">edit_note</i> Observación (Opcional)
+                        </label>
+                        <input type="text" id="autopick-obs" placeholder="Ej: 3 de lácteos, 5 secos, o número de orden...">
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="autopick-submit-btn">
+                        <i class="material-icons">save</i>
+                        <span>Guardar Registro de Cajas</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Gráfico Evolutivo -->
+            <div class="card">
+                <div class="chart-header">
+                    <div class="chart-title-group">
+                        <i class="material-icons text-blue">show_chart</i>
+                        <h3>Evolutivo de Cajas Devueltas</h3>
+                    </div>
+                    <div class="chart-controls">
+                        <select id="chart-period-select" onchange="renderAutopickChart()">
+                            <option value="hoy">Hoy</option>
+                            <option value="7d">Últimos 7 días</option>
+                            <option value="todo">Histórico completo</option>
+                        </select>
+                        <select id="chart-type-select" onchange="renderAutopickChart()">
+                            <option value="acumulado">Curva Acumulativa</option>
+                            <option value="bloques">Por Horas / Días (Barras)</option>
+                            <option value="operador">Por Colaborador</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chart-container-wrapper">
+                    <canvas id="autopickChart"></canvas>
+                </div>
+
+                <div class="chart-legend-stats" id="chart-legend-stats">
+                    <div class="chart-legend-item">
+                        <span class="chart-legend-dot" style="background:#0071ce;"></span>
+                        <span>Curva en tiempo real según cada anotación</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial Detallado de Anotaciones -->
+            <div class="card">
+                <div class="history-header">
+                    <div class="history-title-group">
+                        <i class="material-icons text-blue">history</i>
+                        <h3>Historial de Anotaciones</h3>
+                        <span class="history-counter-badge" id="history-total-count">0</span>
+                    </div>
+                    <div class="history-filters">
+                        <input type="text" id="history-search" placeholder="Buscar por persona, motivo o nota..." oninput="filterHistoryList()">
+                    </div>
+                </div>
+
+                <div id="history-list" class="history-list">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ===============================================================
+             3. Vencimiento Form View
+             =============================================================== -->
         <div id="vencimiento-view" class="view">
             <div class="view-header">
-                <button class="back-btn" onclick="navigateTo('home-view')">
-                    <i class="material-icons">arrow_back</i>
-                </button>
-                <h2>Reporte de Vencimiento</h2>
+                <div class="view-header-left">
+                    <button type="button" class="back-btn" onclick="navigateTo('home-view')" title="Volver al menú">
+                        <i class="material-icons">arrow_back</i>
+                    </button>
+                    <div class="view-title-group">
+                        <h2>Reporte de Vencimiento</h2>
+                        <span class="view-subtitle">Registra productos próximos a caducar para alerta</span>
+                    </div>
+                </div>
             </div>
             
-            <form id="vencimiento-form" class="styled-form">
-                <div class="form-group">
-                    <label for="fecha-venc">Fecha de vencimiento</label>
-                    <input type="date" id="fecha-venc" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cantidad">Cantidad por vencer</label>
-                    <input type="number" id="cantidad" placeholder="Ej: 50" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-id">Item</label>
-                    <input type="text" id="item-id" placeholder="Código del item" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="nombre-prod">Nombre del producto</label>
-                    <input type="text" id="nombre-prod" placeholder="Ej: Leche descremada" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="remitente">Quién lo manda</label>
-                    <input type="text" id="remitente" placeholder="Nombre del proveedor o área" required>
-                </div>
-                
-                <button type="submit" class="submit-btn">Enviar Reporte</button>
-            </form>
+            <div class="card">
+                <form id="vencimiento-form">
+                    <div class="form-group">
+                        <label for="fecha-venc">
+                            <i class="material-icons icon-sm">event</i> Fecha de vencimiento
+                        </label>
+                        <input type="date" id="fecha-venc" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cantidad">
+                            <i class="material-icons icon-sm">format_list_numbered</i> Cantidad por vencer
+                        </label>
+                        <input type="number" id="cantidad" placeholder="Ej: 50" min="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-id">
+                            <i class="material-icons icon-sm">tag</i> Código del Item / EAN
+                        </label>
+                        <input type="text" id="item-id" placeholder="Código numérico o de barras" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nombre-prod">
+                            <i class="material-icons icon-sm">inventory</i> Nombre del producto
+                        </label>
+                        <input type="text" id="nombre-prod" placeholder="Ej: Leche descremada 1L" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="remitente">
+                            <i class="material-icons icon-sm">person</i> Quién lo manda / Área
+                        </label>
+                        <input type="text" id="remitente" placeholder="Tu nombre, área o pasillo" required>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="material-icons">send</i> Enviar Reporte de Vencimiento
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- Abastecimiento Form (Placeholder) -->
+        <!-- ===============================================================
+             4. Abastecimiento Form View (Ahora funcional y completo)
+             =============================================================== -->
         <div id="abastecimiento-view" class="view">
             <div class="view-header">
-                <button class="back-btn" onclick="navigateTo('home-view')">
-                    <i class="material-icons">arrow_back</i>
-                </button>
-                <h2>Reporte de Abastecimiento</h2>
+                <div class="view-header-left">
+                    <button type="button" class="back-btn" onclick="navigateTo('home-view')" title="Volver al menú">
+                        <i class="material-icons">arrow_back</i>
+                    </button>
+                    <div class="view-title-group">
+                        <h2>Reporte de Abastecimiento</h2>
+                        <span class="view-subtitle">Aviso inmediato de quiebres de stock o reposición</span>
+                    </div>
+                </div>
             </div>
-            <p class="placeholder-text">Formulario de abastecimiento en construcción.</p>
+
+            <div class="card">
+                <form id="abastecimiento-form">
+                    <div class="form-group">
+                        <label for="abast-tipo">
+                            <i class="material-icons icon-sm">warning</i> Tipo de Incidencia
+                        </label>
+                        <select id="abast-tipo" required>
+                            <option value="Quiebre en Góndola">Quiebre en Góndola (Hay en bodega)</option>
+                            <option value="Quiebre Total">Quiebre Total (Sin stock físico)</option>
+                            <option value="Error de Inventario">Error de Inventario / Diferencia Sistema</option>
+                            <option value="Sin Fleje o Precio">Mercadería sin Fleje o Precio</option>
+                            <option value="Mercadería Mal Ubicada">Mercadería fuera de lugar</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="abast-item">
+                                <i class="material-icons icon-sm">tag</i> Código del Item / PLU
+                            </label>
+                            <input type="text" id="abast-item" placeholder="Ej: 104523" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="abast-ubicacion">
+                                <i class="material-icons icon-sm">place</i> Pasillo / Módulo
+                            </label>
+                            <input type="text" id="abast-ubicacion" placeholder="Ej: Pasillo 4, Góndola B" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="abast-producto">
+                            <i class="material-icons icon-sm">inventory</i> Descripción del Producto
+                        </label>
+                        <input type="text" id="abast-producto" placeholder="Ej: Arroz Grado 1 1Kg" required>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="abast-cantidad">
+                                <i class="material-icons icon-sm">format_list_numbered</i> Cantidad Faltante Aprox.
+                            </label>
+                            <input type="number" id="abast-cantidad" placeholder="Ej: 24" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="abast-remitente">
+                                <i class="material-icons icon-sm">person</i> Quién Reporta
+                            </label>
+                            <input type="text" id="abast-remitente" placeholder="Tu nombre / rol" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="abast-obs">
+                            <i class="material-icons icon-sm">notes</i> Detalle adicional
+                        </label>
+                        <input type="text" id="abast-obs" placeholder="Ej: Cliente esperando en pasillo o pallet en alto...">
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="background: linear-gradient(135deg, #ffc220 0%, #f59e0b 100%); color: #041f41;">
+                        <i class="material-icons">send</i> Enviar Reporte de Abastecimiento
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- Planes de Acción: Plan de Acción Modulares -->
+        <!-- ===============================================================
+             5. Planes de Acción: Modulares View
+             =============================================================== -->
         <div id="modulares-view" class="view">
             <div class="view-header">
-                <button class="back-btn" onclick="navigateTo('home-view')">
-                    <i class="material-icons">arrow_back</i>
-                </button>
-                <h2>Planes de Acción</h2>
+                <div class="view-header-left">
+                    <button type="button" class="back-btn" onclick="navigateTo('home-view')" title="Volver al menú">
+                        <i class="material-icons">arrow_back</i>
+                    </button>
+                    <div class="view-title-group">
+                        <h2>Planes de Acción (Modulares)</h2>
+                        <span class="view-subtitle">Seguimiento de cumplimiento de tareas tienda</span>
+                    </div>
+                </div>
             </div>
             <iframe src="plan-modulares.html" class="plan-frame" title="Plan de Acción Modulares"></iframe>
         </div>
     </main>
+
+    <!-- Side Drawer Menu -->
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="toggleDrawer(false)"></div>
+    <div class="drawer-panel" id="drawer-panel">
+        <div class="drawer-header">
+            <h3>Opciones & Configuración</h3>
+            <button type="button" class="drawer-close" onclick="toggleDrawer(false)">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-section-title">Navegación Rápida</div>
+            <button type="button" class="drawer-btn" onclick="navigateTo('autopick-view'); toggleDrawer(false);">
+                <i class="material-icons text-purple">all_inbox</i> Cajas Autopick Devueltas
+            </button>
+            <button type="button" class="drawer-btn" onclick="navigateTo('vencimiento-view'); toggleDrawer(false);">
+                <i class="material-icons text-blue">event_busy</i> Problemas Vencimiento
+            </button>
+            <button type="button" class="drawer-btn" onclick="navigateTo('abastecimiento-view'); toggleDrawer(false);">
+                <i class="material-icons text-yellow">inventory_2</i> Problemas Abastecimiento
+            </button>
+            <button type="button" class="drawer-btn" onclick="navigateTo('modulares-view'); toggleDrawer(false);">
+                <i class="material-icons text-green">assignment_turned_in</i> Planes de Acción
+            </button>
+
+            <div class="drawer-section-title" style="margin-top: 10px;">Gestión de Datos Autopick</div>
+            <button type="button" class="drawer-btn" onclick="exportAutopickCSV(); toggleDrawer(false);">
+                <i class="material-icons text-blue">table_view</i> Exportar a Excel (CSV)
+            </button>
+            <button type="button" class="drawer-btn" onclick="shareAutopickWhatsApp(); toggleDrawer(false);">
+                <i class="material-icons text-green">share</i> Compartir por WhatsApp
+            </button>
+            <button type="button" class="drawer-btn" onclick="loadSampleAutopickData(); toggleDrawer(false);">
+                <i class="material-icons text-purple">science</i> Cargar datos de prueba (Demo)
+            </button>
+            <button type="button" class="drawer-btn danger-text" onclick="clearAllAutopickData(); toggleDrawer(false);">
+                <i class="material-icons text-red">delete_sweep</i> Borrar registros de Autopick
+            </button>
+
+            <div class="drawer-section-title" style="margin-top: 10px;">Sincronización en GitHub Pages</div>
+            <button type="button" class="drawer-btn" onclick="openCloudModal(); toggleDrawer(false);">
+                <i class="material-icons text-blue">cloud_sync</i> Sincronizar en Vivo (GitHub Pages)
+            </button>
+            <button type="button" class="drawer-btn" onclick="openGitHubGuideModal(); toggleDrawer(false);">
+                <i class="material-icons text-purple">terminal</i> Pasos para Publicar en GitHub
+            </button>
+
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; padding: 0 4px; margin-top: 10px;">
+                En GitHub Pages, los celulares comparten datos en tiempo real mediante tu Google Sheet o Firebase (ambos 100% gratis).
+            </div>
+        </div>
+    </div>
+
+    <!-- Cloud Sync Modal for Multi-Device GitHub Pages -->
+    <div class="drawer-backdrop" id="cloud-modal-backdrop" style="z-index: 250;">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 480px; max-height: 85vh; overflow-y: auto; background: white; border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 251;">
+            <h3 style="font-size: 17px; color: var(--dark-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <i class="material-icons text-blue">cloud_sync</i> Sincronización en la Nube
+            </h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                Para que lo que anota un operador en su celular se refleje en tu pantalla en tiempo real en GitHub Pages, elige tu opción preferida:
+            </p>
+
+            <div style="background: var(--surface-alt); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: var(--dark-blue); margin-bottom: 6px;">
+                    <i class="material-icons text-green" style="font-size: 18px;">table_chart</i> Opción 1: Google Sheets (Auto-Sync cada 6s)
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">
+                    Tu aplicación ya tiene un Webhook configurado. Solo debes asegurarte de que tu Google Script tenga el código bi-direccional.
+                </p>
+                <button type="button" class="btn-xs btn-outline" onclick="copyAppsScriptCode()" style="margin-bottom: 8px;">
+                    <i class="material-icons" style="font-size: 14px;">content_copy</i> Copiar Código para Google Apps Script
+                </button>
+            </div>
+
+            <div style="background: var(--surface-alt); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: var(--dark-blue); margin-bottom: 6px;">
+                    <i class="material-icons text-purple" style="font-size: 18px;">bolt</i> Opción 2: Firebase (Instantáneo en 0.2 seg)
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+                    Sincronización WebSocket ultra rápida para GitHub Pages. Pega la URL de tu base de datos Firebase Realtime:
+                </p>
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <input type="text" id="firebase-url-input" placeholder="https://tu-proyecto-rtdb.firebaseio.com" style="font-size: 12px;">
+                </div>
+                <button type="button" class="btn-xs" style="background: var(--primary-blue); color: white;" onclick="saveFirebaseConfig()">
+                    Guardar y Activar Firebase
+                </button>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" class="btn-sm btn-outline" onclick="closeCloudModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Guide Modal -->
+    <div class="drawer-backdrop" id="github-modal-backdrop" style="z-index: 250;">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 500px; max-height: 85vh; overflow-y: auto; background: white; border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 251;">
+            <h3 style="font-size: 17px; color: var(--dark-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                <i class="material-icons text-purple">terminal</i> Cómo Publicar en GitHub Pages
+            </h3>
+            <div style="font-size: 12px; line-height: 1.5; color: var(--text-main);">
+                <p style="margin-bottom: 8px;"><strong>Paso 1:</strong> Crea un repositorio en GitHub (ej: <code>Reportes-Tienda</code>).</p>
+                <p style="margin-bottom: 8px;"><strong>Paso 2:</strong> En la terminal de esta carpeta, ejecuta:</p>
+                <pre style="background: #1e293b; color: #f8fafc; padding: 10px; border-radius: 8px; font-size: 11px; overflow-x: auto; margin-bottom: 10px;">
+git init
+git add .
+git commit -m "Sistema de Reportes y Cajas Autopick"
+git branch -M main
+git remote add origin https://github.com/TU-USUARIO/Reportes.git
+git push -u origin main</pre>
+                <p style="margin-bottom: 8px;"><strong>Paso 3:</strong> En GitHub entra a <strong>Settings > Pages</strong>.</p>
+                <p style="margin-bottom: 8px;"><strong>Paso 4:</strong> En <em>Branch</em> selecciona <strong>main</strong> y carpeta <strong>/ (root)</strong> y haz clic en <strong>Save</strong>.</p>
+                <p style="color: var(--success-green); font-weight: 600;">¡Listo! En 1 minuto tu aplicación estará accesible para todos en internet.</p>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <button type="button" class="btn-sm btn-outline" onclick="closeGitHubGuideModal()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal for Autopick Record -->
+    <div class="drawer-backdrop" id="edit-modal-backdrop" style="z-index: 250;">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 420px; background: white; border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 251;">
+            <h3 style="font-size: 17px; color: var(--dark-blue); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i class="material-icons text-blue">edit</i> Modificar Registro
+            </h3>
+            <form id="edit-record-form" onsubmit="saveEditedRecord(event)">
+                <input type="hidden" id="edit-record-id">
+                <div class="form-group">
+                    <label for="edit-record-quien">Quién anotó</label>
+                    <input type="text" id="edit-record-quien" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-record-cantidad">Cantidad de cajas</label>
+                    <input type="number" id="edit-record-cantidad" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-record-motivo">Motivo</label>
+                    <input type="text" id="edit-record-motivo">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button type="button" class="btn-sm btn-outline" style="flex: 1; justify-content: center; padding: 12px;" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="submit-btn" style="flex: 1; margin: 0; padding: 12px;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
 
     <script src="app.js"></script>
 </body>
