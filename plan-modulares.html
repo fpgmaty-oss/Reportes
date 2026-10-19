@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Plan de Acción · Módulo Diario</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- HEADER -->
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-blue-700"> Plan de Acción — Módulo Diario</h1>
+      <p class="text-slate-500 mt-1">Rotación de 1 responsable por día entre 3 personas · Sprint de 5 días hábiles</p>
+      <p class="text-xs text-slate-400 mt-2">
+        Fuente de referencia: <a class="underline text-blue-500" href="https://app.powerbi.com/groups/me/apps/3526f2ff-7a0f-4bab-9ed1-6f586aea2d6a/reports/66b3807c-4837-4f67-8583-de00b4d184e0/ReportSection" target="_blank">Reporte Power BI vinculado</a>
+        — pendiente de cargar datos reales (CSV/export) para reemplazar las cifras de ejemplo.
+      </p>
+    </header>
+
+    <!-- EXECUTIVE SUMMARY (TOP) -->
+    <section class="bg-blue-700 text-white rounded-xl p-6 mb-8 shadow">
+      <h2 class="text-xl font-semibold mb-2"> Resumen Ejecutivo</h2>
+      <ul class="space-y-1 text-blue-50 list-disc list-inside">
+        <li>Equipo de <strong>3 personas</strong>, rotando el módulo diario (1 responsable por día).</li>
+        <li>Duración del sprint: <strong>5 días hábiles</strong>, del <strong>lunes 19</strong> al <strong>viernes 23 de octubre de 2026</strong>.</li>
+        <li>Meta: completar el 100% del módulo asignado al cierre del viernes 23/10/2026.</li>
+        <li>Estado actual: <strong>0% avanzado</strong> — arranca hoy lunes 19/10.</li>
+      </ul>
+    </section>
+
+    <!-- EDITABLE NAMES NOTE -->
+    <section class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-8 text-sm text-amber-800">
+       <strong>Nota:</strong> Reemplaza "Persona 1 / 2 / 3" abajo por los nombres reales del equipo.
+      Las metas por día son genéricas (placeholder) hasta tener el export real del reporte de Power BI.
+    </section>
+
+    <!-- DAILY SCHEDULE -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-blue-700"> Calendario Diario (1 modular por dia, responsable rotativo)</h2>
+
+      <div class="space-y-4">
+
+        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+          <div class="flex flex-wrap justify-between items-center mb-2">
+            <h3 class="text-lg font-bold text-slate-800">Lunes 19/10/2026</h3>
+            <span class="text-blue-600 font-semibold">Avance acumulado: 20%</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-3">Dia 1 de 5</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 1</span></div>
+            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 1</span></div>
+            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Dataset validado</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+          <div class="flex flex-wrap justify-between items-center mb-2">
+            <h3 class="text-lg font-bold text-slate-800">Martes 20/10/2026</h3>
+            <span class="text-blue-600 font-semibold">Avance acumulado: 40%</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-3">Dia 2 de 5</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 2</span></div>
+            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 2</span></div>
+            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Reporte de QA</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+          <div class="flex flex-wrap justify-between items-center mb-2">
+            <h3 class="text-lg font-bold text-slate-800">Miercoles 21/10/2026</h3>
+            <span class="text-blue-600 font-semibold">Avance acumulado: 60%</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-3">Dia 3 de 5</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 3</span></div>
+            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 3</span></div>
+            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Modulo en progreso (v1)</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 border-l-4 border-blue-500">
+          <div class="flex flex-wrap justify-between items-center mb-2">
+            <h3 class="text-lg font-bold text-slate-800">Jueves 22/10/2026</h3>
+            <span class="text-blue-600 font-semibold">Avance acumulado: 80%</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-3">Dia 4 de 5</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 4</span></div>
+            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 1</span></div>
+            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold">Modulo revisado (v2)</span></div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 rounded-xl shadow p-5 border-l-4 border-green-500">
+          <div class="flex flex-wrap justify-between items-center mb-2">
+            <h3 class="text-lg font-bold text-slate-800">Viernes 23/10/2026</h3>
+            <span class="text-green-700 font-bold">Avance acumulado: 100%</span>
+          </div>
+          <p class="text-sm text-slate-500 mb-3">Dia 5 de 5 - CIERRE DEL SPRINT</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div><span class="text-slate-400 block">Modular del dia</span><span class="font-semibold">Modular Textil 5</span></div>
+            <div><span class="text-slate-400 block">Responsable</span><span class="font-semibold">Persona 2</span></div>
+            <div><span class="text-slate-400 block">Entregable</span><span class="font-semibold text-green-700">Modulo COMPLETO</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CHART -->
+    <section class="bg-white rounded-xl shadow p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4 text-blue-700"> Avance Proyectado</h2>
+      <div style="height:320px;">
+        <canvas id="progressChart"></canvas>
+      </div>
+    </section>
+
+    <!-- REFERENCE MESSAGE TO SEND -->
+    <section class="bg-slate-900 text-slate-100 rounded-xl p-6 mb-8 shadow">
+      <h2 class="text-xl font-semibold mb-3 text-amber-300"> Mensaje de Referencia (listo para enviar)</h2>
+      <p class="text-sm text-slate-300 mb-2">Copia y pega esto en tu chat/correo de seguimiento:</p>
+      <div class="bg-slate-800 rounded-lg p-4 font-mono text-sm leading-relaxed">
+        "Hola equipo , arrancamos hoy lunes 19/10 el módulo diario con rotación de responsable
+        (Persona 1, 2 y 3, uno por día). Estimamos estar <strong>100% completos el viernes 23 de
+        octubre de 2026</strong>, al cierre del día. Cualquier bloqueo se escala el mismo día para
+        no mover la fecha de entrega."
+      </div>
+    </section>
+
+    <!-- EXECUTIVE INSIGHTS (BOTTOM) -->
+    <section class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+      <h2 class="text-xl font-semibold mb-2 text-blue-700"> Conclusiones y Próximos Pasos</h2>
+      <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+        <li>Fecha de finalización comprometida: <strong>viernes 23 de octubre de 2026</strong>.</li>
+        <li>Una sola persona es dueña del módulo cada día — evita duplicar esfuerzo y deja claro quién reporta avance.</li>
+        <li>Pendiente: reemplazar metas genéricas con datos reales exportados del reporte de Power BI vinculado arriba.</li>
+        <li>Pendiente: confirmar nombres reales del equipo (Persona 1/2/3).</li>
+      </ul>
+    </section>
+
+  </div>
+
+<script>
+  const ctx = document.getElementById('progressChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Lun 19/10', 'Mar 20/10', 'Mié 21/10', 'Jue 22/10', 'Vie 23/10'],
+      datasets: [{
+        label: 'Avance acumulado (%)',
+        data: [20, 40, 60, 80, 100],
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.15)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: '#2563eb'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+</script>
+</body>
+</html>

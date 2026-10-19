@@ -113,6 +113,20 @@ body {
     color: var(--dark-blue);
 }
 
+.bg-green {
+    background-color: #2e8540;
+    color: white;
+}
+
+.plan-frame {
+    width: 100%;
+    height: 75vh;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: white;
+}
+
 .view-header {
     display: flex;
     align-items: center;

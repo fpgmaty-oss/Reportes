@@ -27,6 +27,10 @@
                     <i class="material-icons">inventory_2</i>
                     <span>Problemas Abastecimiento</span>
                 </button>
+                <button class="square-btn bg-green" onclick="navigateTo('modulares-view')">
+                    <i class="material-icons">assignment_turned_in</i>
+                    <span>Plan de Acción Modulares</span>
+                </button>
             </div>
         </div>
 
@@ -78,6 +82,17 @@
                 <h2>Reporte de Abastecimiento</h2>
             </div>
             <p class="placeholder-text">Formulario de abastecimiento en construcción.</p>
+        </div>
+
+        <!-- Planes de Acción: Plan de Acción Modulares -->
+        <div id="modulares-view" class="view">
+            <div class="view-header">
+                <button class="back-btn" onclick="navigateTo('home-view')">
+                    <i class="material-icons">arrow_back</i>
+                </button>
+                <h2>Planes de Acción</h2>
+            </div>
+            <iframe src="plan-modulares.html" class="plan-frame" title="Plan de Acción Modulares"></iframe>
         </div>
     </main>
 
