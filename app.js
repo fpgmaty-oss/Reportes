@@ -1,7 +1,7 @@
 // ==========================================================================
 // CONFIGURACIÓN & CONSTANTES
 // ==========================================================================
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxJVkG6HVXtmOXgr5DAbLEnZNxeQ01e-5wh0gV7G-6nvi3JWG6pBV4ZyHQE9xfLVPSh/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby6p8wNEK-cDSflo2mQe8aeVXfDxrdCuk-an-M-QG8-sH9cBoBdQN-XrEYXF50YAyM/exec';
 const AUTOPICK_STORAGE_KEY = 'reportes_autopick_records_v1';
 const OPERATORS_STORAGE_KEY = 'reportes_autopick_operators_v1';
 
@@ -23,6 +23,41 @@ function isDanado(motivo) {
 function normalizeMotivo(motivo) {
     if (isDanado(motivo)) return 'Producto dañado';
     return 'Capacidad de estante';
+}
+
+// Google Sheets auto-convierte strings de fecha/hora a objetos Date.
+// Al leerlos vía doGet, vuelven como strings largos tipo:
+//   "Mon Oct 19 2026 00:00:00 GMT-0300 (hora de verano de Chile)"
+// Estas funciones extraen el formato correcto.
+function normalizeCloudFecha(raw) {
+    if (!raw) return getTodayDateString();
+    const s = String(raw);
+    // Ya es YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    // Intentar parsear como Date
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+        const y = d.getFullYear();
+        // Google Sheets devuelve 1899 para columnas de hora pura — ignorar
+        if (y < 1900) return getTodayDateString();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    }
+    return getTodayDateString();
+}
+
+function normalizeCloudHora(raw) {
+    if (!raw) return '12:00';
+    const s = String(raw);
+    // Ya es HH:MM
+    if (/^\d{1,2}:\d{2}$/.test(s)) return s;
+    // Intentar parsear como Date y extraer hora
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return '12:00';
 }
 
 // Sincronización en vivo instantánea entre pestañas / pantallas
@@ -297,8 +332,16 @@ async function handleAutopickSubmit(e) {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        }).then(resp => {
+            if (resp.ok) {
+                console.log('Registro sincronizado con Google Sheets');
+            } else {
+                console.warn('Webhook respondió con status:', resp.status);
+                showToast('Guardado local OK, pero error al sincronizar con la nube', 'error');
+            }
         }).catch(err => {
             console.warn('Webhook background sync warning:', err);
+            showToast('Sin conexión al servidor. El registro se guardó localmente.', 'error');
         });
     }
 }
@@ -315,9 +358,22 @@ async function syncNow(manual = true) {
 
     try {
         if (WEBHOOK_URL) {
-            const resp = await fetch(WEBHOOK_URL + '?action=getAutopick', { redirect: 'follow' });
+            const resp = await fetch(WEBHOOK_URL, { redirect: 'follow' });
             if (resp.ok) {
                 const text = await resp.text();
+
+                // Detectar si Google Apps Script devolvió HTML de error
+                // (ej: "Script function not found: doGet")
+                if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html') || text.includes('Script function not found')) {
+                    console.error('El Google Apps Script NO tiene la función doGet configurada. Respuesta:', text.substring(0, 200));
+                    if (manual) {
+                        showToast('⚠️ Tu Google Apps Script no tiene la función doGet. Ve al menú → Sincronizar y copia el código actualizado.', 'error');
+                    }
+                    if (statusText) statusText.textContent = '⚠️ Apps Script sin doGet — Solo modo local';
+                    updateAutopickUI();
+                    return;
+                }
+
                 try {
                     const cloudRecords = JSON.parse(text);
                     let normalized = [];
@@ -326,8 +382,14 @@ async function syncNow(manual = true) {
                         if (typeof cloudRecords[0] === 'object' && !Array.isArray(cloudRecords[0])) {
                             // Viene como lista de objetos JSON {quien, cantidad, fecha, ...}
                             normalized = cloudRecords.filter(r => r && (r.tipoReporte === 'AutopickDevueltas' || r.cantidad));
-                            // Normalizar motivos a solo 2 opciones
-                            normalized.forEach(r => { if (r.motivo) r.motivo = normalizeMotivo(r.motivo); });
+                            // Normalizar motivos y fechas/horas que Google Sheets convierte a Date
+                            normalized.forEach(r => {
+                                if (r.motivo) r.motivo = normalizeMotivo(r.motivo);
+                                r.fecha = normalizeCloudFecha(r.fecha);
+                                r.hora = normalizeCloudHora(r.hora);
+                                r.cantidad = Number(r.cantidad) || 0;
+                                r.timestamp = Number(r.timestamp) || Date.now();
+                            });
                         } else if (Array.isArray(cloudRecords[0])) {
                             // Viene como matriz de celdas de Google Sheets [ [col1, col2, ...], ... ]
                             const headers = cloudRecords[0].map(h => String(h).toLowerCase().trim());
@@ -370,8 +432,12 @@ async function syncNow(manual = true) {
                         }
                     }
                 } catch(e) {
-                    console.warn('Error parseando datos de Google Sheets:', e);
+                    console.warn('Error parseando datos de Google Sheets:', e, '— Respuesta recibida:', text.substring(0, 300));
+                    if (manual) showToast('Error leyendo datos de Google Sheets. Revisa la configuración del Apps Script.', 'error');
                 }
+            } else {
+                console.warn('Webhook respondió con status:', resp.status);
+                if (manual) showToast(`Error del servidor: ${resp.status}`, 'error');
             }
         }
         updateAutopickUI();
@@ -380,8 +446,10 @@ async function syncNow(manual = true) {
         if (statusText) statusText.textContent = `En Vivo · Actualizado a las ${timeStr}`;
         if (manual) showToast('Datos actualizados en tiempo real', 'success');
     } catch (e) {
+        console.error('Error en sincronización:', e);
         updateAutopickUI();
         if (statusText) statusText.textContent = 'En Vivo (Modo Local Activo)';
+        if (manual) showToast('Sin conexión al servidor. Datos locales activos.', 'error');
     } finally {
         isSyncing = false;
     }
@@ -1311,48 +1379,130 @@ function closeGitHubGuideModal() {
 }
 
 function copyAppsScriptCode() {
-    const scriptCode = `// Código para Google Apps Script (Extensiones > Apps Script en tu hoja de Google Sheets)
+    const scriptCode = `// ============================================================
+// Código para Google Apps Script
+// Extensiones > Apps Script en tu hoja de Google Sheets
+// ============================================================
+// IMPORTANTE: Después de pegar este código:
+//   1. Clic en "Guardar" (ícono de disco)
+//   2. Clic en "Implementar" > "Nueva implementación"
+//   3. Tipo: "Aplicación web"
+//   4. Ejecutar como: "Yo" (tu cuenta)
+//   5. Quién tiene acceso: "Cualquier persona"
+//   6. Clic en "Implementar" y copia la URL generada
+//   7. Pega esa URL en la constante WEBHOOK_URL de app.js
+// ============================================================
+
+// doGet: Devuelve los registros de autopick como JSON
+// La app llama a esta función para LEER los datos guardados
 function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Autopick") || SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = sheet.getDataRange().getValues();
-  if (data.length <= 1) {
-    return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-  }
-  var headers = ["id", "fecha", "hora", "turno", "quien", "cantidad", "motivo", "observaciones", "timestamp"];
-  var rows = [];
-  for (var i = 1; i < data.length; i++) {
-    var row = {};
-    for (var j = 0; j < headers.length; j++) {
-      row[headers[j]] = data[i][j];
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Autopick");
+    
+    // Si no existe la hoja "Autopick", crearla con encabezados
+    if (!sheet) {
+      sheet = ss.insertSheet("Autopick");
+      sheet.appendRow(["id", "fecha", "hora", "turno", "quien", "cantidad", "motivo", "observaciones", "timestamp"]);
     }
-    rows.push(row);
+    
+    var data = sheet.getDataRange().getValues();
+    
+    // Si solo hay encabezados (o está vacía), devolver array vacío
+    if (data.length <= 1) {
+      return ContentService.createTextOutput(JSON.stringify([]))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Usar la primera fila como nombres de columna
+    var headers = data[0].map(function(h) { return String(h).trim().toLowerCase(); });
+    var rows = [];
+    
+    for (var i = 1; i < data.length; i++) {
+      var row = {};
+      for (var j = 0; j < headers.length; j++) {
+        var key = headers[j];
+        var val = data[i][j];
+        // Convertir cantidad y timestamp a número
+        if (key === "cantidad" || key === "timestamp") {
+          val = Number(val) || 0;
+        } else {
+          val = String(val || "");
+        }
+        row[key] = val;
+      }
+      // Solo incluir filas que tengan cantidad > 0
+      if (row.cantidad && row.cantidad > 0) {
+        rows.push(row);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(rows))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-  return ContentService.createTextOutput(JSON.stringify(rows)).setMimeType(ContentService.MimeType.JSON);
 }
 
+// doPost: Recibe un registro nuevo y lo agrega a la hoja
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Autopick") || SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    data.id || new Date().getTime(),
-    data.fecha || '',
-    data.hora || '',
-    data.turno || '',
-    data.quien || '',
-    data.cantidad || 0,
-    data.motivo || '',
-    data.observaciones || '',
-    data.timestamp || new Date().getTime()
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({ status: "ok" })).setMimeType(ContentService.MimeType.JSON);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Autopick");
+    
+    if (!sheet) {
+      sheet = ss.insertSheet("Autopick");
+      sheet.appendRow(["id", "fecha", "hora", "turno", "quien", "cantidad", "motivo", "observaciones", "timestamp"]);
+    }
+    
+    var data = JSON.parse(e.postData.contents);
+    
+    sheet.appendRow([
+      data.id || String(new Date().getTime()),
+      data.fecha || "",
+      data.hora || "",
+      data.turno || "",
+      data.quien || "",
+      Number(data.cantidad) || 0,
+      data.motivo || "",
+      data.observaciones || "",
+      Number(data.timestamp) || new Date().getTime()
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }`;
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(scriptCode).then(() => {
-            showToast('¡Código de Apps Script copiado al portapapeles!', 'success');
+            showToast('¡Código de Apps Script copiado! Pégalo en Extensiones > Apps Script de tu Google Sheet', 'success');
         }).catch(() => {
-            showToast('Error copiando. Selecciona el texto manualmente.', 'error');
+            // Fallback: crear un textarea temporal para copiar
+            const ta = document.createElement('textarea');
+            ta.value = scriptCode;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('¡Código copiado al portapapeles!', 'success');
+            } catch(err) {
+                showToast('Error copiando. Abre la consola del navegador para ver el código.', 'error');
+                console.log(scriptCode);
+            }
+            document.body.removeChild(ta);
         });
+    } else {
+        // Navegadores sin clipboard API
+        prompt('Copia este código y pégalo en Google Apps Script:', scriptCode);
     }
 }
 
