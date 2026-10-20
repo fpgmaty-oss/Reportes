@@ -705,32 +705,36 @@ function escapeHtml(str) {
 }
 
 function deleteAutopickRecord(id) {
-    if (!confirm('¿Deseas eliminar este registro de cajas?')) return;
+    requestSupervisorAccess(() => {
+        if (!confirm('¿Deseas eliminar este registro de cajas?')) return;
 
-    let records = getAutopickRecords();
-    records = records.filter(r => r.id !== id);
-    saveAutopickRecords(records);
-    if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
-    if (firebaseDbRef) firebaseDbRef.child(id).remove();
-    showToast('Registro eliminado', 'info');
-    updateAutopickUI();
+        let records = getAutopickRecords();
+        records = records.filter(r => r.id !== id);
+        saveAutopickRecords(records);
+        if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
+        if (firebaseDbRef) firebaseDbRef.child(id).remove();
+        showToast('Registro eliminado', 'info');
+        updateAutopickUI();
+    }, 'Introduce el PIN de supervisor para eliminar este registro');
 }
 
 // ==========================================================================
 // MODAL DE EDICIÓN RÁPIDA
 // ==========================================================================
 function openEditModal(id) {
-    const records = getAutopickRecords();
-    const record = records.find(r => r.id === id);
-    if (!record) return;
+    requestSupervisorAccess(() => {
+        const records = getAutopickRecords();
+        const record = records.find(r => r.id === id);
+        if (!record) return;
 
-    document.getElementById('edit-record-id').value = record.id;
-    document.getElementById('edit-record-quien').value = record.quien;
-    document.getElementById('edit-record-cantidad').value = record.cantidad;
-    document.getElementById('edit-record-motivo').value = record.motivo || '';
+        document.getElementById('edit-record-id').value = record.id;
+        document.getElementById('edit-record-quien').value = record.quien;
+        document.getElementById('edit-record-cantidad').value = record.cantidad;
+        document.getElementById('edit-record-motivo').value = record.motivo || '';
 
-    const backdrop = document.getElementById('edit-modal-backdrop');
-    if (backdrop) backdrop.classList.add('active');
+        const backdrop = document.getElementById('edit-modal-backdrop');
+        if (backdrop) backdrop.classList.add('active');
+    }, 'Introduce el PIN de supervisor para modificar esta anotación');
 }
 
 function closeEditModal() {
@@ -1188,81 +1192,85 @@ function exportAutopickCSV() {
 // DATOS DEMO & UTILIDADES
 // ==========================================================================
 function loadSampleAutopickData() {
-    const todayStr = getTodayDateString();
-    const now = Date.now();
+    requestSupervisorAccess(() => {
+        const todayStr = getTodayDateString();
+        const now = Date.now();
 
-    const sampleRecords = [
-        {
-            id: 'demo_1',
-            quien: 'Carlos M.',
-            cantidad: 14,
-            turno: 'Mañana',
-            motivo: 'Capacidad de estante',
-            observaciones: 'Pasillo 3, góndola de cereales llena',
-            fecha: todayStr,
-            hora: '08:30',
-            timestamp: now - (6 * 3600 * 1000)
-        },
-        {
-            id: 'demo_2',
-            quien: 'Andrea R.',
-            cantidad: 8,
-            turno: 'Mañana',
-            motivo: 'Producto dañado',
-            observaciones: 'Cajas de galletas aplastadas',
-            fecha: todayStr,
-            hora: '10:45',
-            timestamp: now - (4 * 3600 * 1000)
-        },
-        {
-            id: 'demo_3',
-            quien: 'Pedro S.',
-            cantidad: 22,
-            turno: 'Tarde',
-            motivo: 'Capacidad de estante',
-            observaciones: 'Pallet alto sin espacio en pasillo 5',
-            fecha: todayStr,
-            hora: '13:15',
-            timestamp: now - (2 * 3600 * 1000)
-        },
-        {
-            id: 'demo_4',
-            quien: 'Carlos M.',
-            cantidad: 19,
-            turno: 'Tarde',
-            motivo: 'Producto dañado',
-            observaciones: 'Botellas con fuga en caja',
-            fecha: todayStr,
-            hora: '15:20',
-            timestamp: now - (45 * 60 * 1000)
-        },
-        {
-            id: 'demo_5',
-            quien: 'Juan P.',
-            cantidad: 11,
-            turno: 'Tarde',
-            motivo: 'Capacidad de estante',
-            observaciones: 'Góndola B2 sin espacio para refrescos',
-            fecha: todayStr,
-            hora: '17:05',
-            timestamp: now - (10 * 60 * 1000)
-        }
-    ];
+        const sampleRecords = [
+            {
+                id: 'demo_1',
+                quien: 'Carlos M.',
+                cantidad: 14,
+                turno: 'Mañana',
+                motivo: 'Capacidad de estante',
+                observaciones: 'Pasillo 3, góndola de cereales llena',
+                fecha: todayStr,
+                hora: '08:30',
+                timestamp: now - (6 * 3600 * 1000)
+            },
+            {
+                id: 'demo_2',
+                quien: 'Andrea R.',
+                cantidad: 8,
+                turno: 'Mañana',
+                motivo: 'Producto dañado',
+                observaciones: 'Cajas de galletas aplastadas',
+                fecha: todayStr,
+                hora: '10:45',
+                timestamp: now - (4 * 3600 * 1000)
+            },
+            {
+                id: 'demo_3',
+                quien: 'Pedro S.',
+                cantidad: 22,
+                turno: 'Tarde',
+                motivo: 'Capacidad de estante',
+                observaciones: 'Pallet alto sin espacio en pasillo 5',
+                fecha: todayStr,
+                hora: '13:15',
+                timestamp: now - (2 * 3600 * 1000)
+            },
+            {
+                id: 'demo_4',
+                quien: 'Carlos M.',
+                cantidad: 19,
+                turno: 'Tarde',
+                motivo: 'Producto dañado',
+                observaciones: 'Botellas con fuga en caja',
+                fecha: todayStr,
+                hora: '15:20',
+                timestamp: now - (45 * 60 * 1000)
+            },
+            {
+                id: 'demo_5',
+                quien: 'Juan P.',
+                cantidad: 11,
+                turno: 'Tarde',
+                motivo: 'Capacidad de estante',
+                observaciones: 'Góndola B2 sin espacio para refrescos',
+                fecha: todayStr,
+                hora: '17:05',
+                timestamp: now - (10 * 60 * 1000)
+            }
+        ];
 
-    saveAutopickRecords(sampleRecords);
-    if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
-    showToast('¡5 registros de prueba cargados con éxito!', 'success');
-    updateAutopickUI();
+        saveAutopickRecords(sampleRecords);
+        if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
+        showToast('¡5 registros de prueba cargados con éxito!', 'success');
+        updateAutopickUI();
+    }, 'Introduce el PIN para cargar datos de prueba');
 }
 
 function clearAllAutopickData() {
-    if (!confirm('¿Estás seguro de que deseas eliminar TODOS los registros de cajas autopick? Esta acción no se puede deshacer.')) {
-        return;
-    }
-    saveAutopickRecords([]);
-    if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
-    showToast('Historial de cajas autopick vaciado', 'info');
-    updateAutopickUI();
+    requestSupervisorAccess(() => {
+        if (!confirm('¿Estás seguro de que deseas eliminar TODOS los registros de cajas autopick? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        saveAutopickRecords([]);
+        if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
+        showToast('Historial de cajas autopick vaciado', 'info');
+        updateAutopickUI();
+    }, 'Introduce el PIN de supervisor para vaciar el historial de cajas');
 }
 
 // ==========================================================================
@@ -1547,8 +1555,173 @@ function initFirebaseIfConfigured() {
     }
 }
 
-// Inicializar Firebase al cargar si está configurado
+// ==========================================================================
+// SEGURIDAD & CONTROL DE SUPERVISOR (PIN)
+// ==========================================================================
+const PIN_STORAGE_KEY = 'reportes_supervisor_pin';
+const PIN_SESSION_KEY = 'reportes_supervisor_session';
+const DEFAULT_PIN = '1234';
+
+let pendingAdminAction = null;
+
+function getStoredPin() {
+    return localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN;
+}
+
+function setStoredPin(newPin) {
+    localStorage.setItem(PIN_STORAGE_KEY, newPin);
+}
+
+function isSupervisorSessionActive() {
+    const sessionTime = sessionStorage.getItem(PIN_SESSION_KEY);
+    if (!sessionTime) return false;
+    const now = Date.now();
+    // Válido por 20 minutos de actividad
+    if (now - parseInt(sessionTime, 10) < 20 * 60 * 1000) {
+        return true;
+    }
+    sessionStorage.removeItem(PIN_SESSION_KEY);
+    return false;
+}
+
+function activateSupervisorSession() {
+    sessionStorage.setItem(PIN_SESSION_KEY, Date.now().toString());
+    updateSupervisorUI();
+}
+
+function logoutSupervisorSession() {
+    sessionStorage.removeItem(PIN_SESSION_KEY);
+    updateSupervisorUI();
+    showToast('Modo supervisor bloqueado', 'info');
+}
+
+function updateSupervisorUI() {
+    const statusBar = document.getElementById('supervisor-status-bar');
+    if (statusBar) {
+        statusBar.style.display = isSupervisorSessionActive() ? 'block' : 'none';
+    }
+}
+
+function requestSupervisorAccess(actionCallback, reasonText) {
+    if (isSupervisorSessionActive()) {
+        sessionStorage.setItem(PIN_SESSION_KEY, Date.now().toString());
+        actionCallback();
+        return;
+    }
+    pendingAdminAction = actionCallback;
+    openPinModal(reasonText);
+}
+
+function openPinModal(reasonText) {
+    const backdrop = document.getElementById('pin-modal-backdrop');
+    const subtitle = document.getElementById('pin-modal-subtitle');
+    const input = document.getElementById('admin-pin-input');
+    const errorMsg = document.getElementById('pin-error-msg');
+
+    if (subtitle && reasonText) subtitle.textContent = reasonText;
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (input) {
+        input.value = '';
+        input.classList.remove('pin-error');
+    }
+    if (backdrop) backdrop.classList.add('active');
+    setTimeout(() => { if (input) input.focus(); }, 150);
+}
+
+function closePinModal() {
+    const backdrop = document.getElementById('pin-modal-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    pendingAdminAction = null;
+}
+
+function handlePinSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('admin-pin-input');
+    const errorMsg = document.getElementById('pin-error-msg');
+    const entered = (input ? input.value : '').trim();
+    const validPin = getStoredPin();
+
+    if (entered === validPin) {
+        activateSupervisorSession();
+        closePinModal();
+        showToast('Acceso de supervisor autorizado', 'success');
+        if (typeof pendingAdminAction === 'function') {
+            const action = pendingAdminAction;
+            pendingAdminAction = null;
+            action();
+        }
+    } else {
+        if (input) {
+            input.classList.add('pin-error');
+            setTimeout(() => input.classList.remove('pin-error'), 400);
+            input.value = '';
+            input.focus();
+        }
+        if (errorMsg) errorMsg.style.display = 'block';
+    }
+}
+
+function togglePinVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+    } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+    }
+}
+
+function openChangePinModal() {
+    const backdrop = document.getElementById('change-pin-modal-backdrop');
+    const form = document.getElementById('change-pin-form');
+    if (form) form.reset();
+    if (backdrop) backdrop.classList.add('active');
+}
+
+function closeChangePinModal() {
+    const backdrop = document.getElementById('change-pin-modal-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+}
+
+function handleChangePinSubmit(e) {
+    e.preventDefault();
+    const currentPin = (document.getElementById('current-pin-input').value || '').trim();
+    const newPin = (document.getElementById('new-pin-input').value || '').trim();
+    const confirmPin = (document.getElementById('confirm-pin-input').value || '').trim();
+    const stored = getStoredPin();
+
+    if (currentPin !== stored) {
+        showToast('El PIN actual es incorrecto', 'error');
+        return;
+    }
+    if (!newPin || newPin.length < 4 || newPin.length > 6) {
+        showToast('El nuevo PIN debe tener entre 4 y 6 números', 'warning');
+        return;
+    }
+    if (newPin !== confirmPin) {
+        showToast('La confirmación no coincide con el nuevo PIN', 'error');
+        return;
+    }
+
+    setStoredPin(newPin);
+    closeChangePinModal();
+    activateSupervisorSession();
+    showToast('¡PIN de supervisor actualizado correctamente!', 'success');
+}
+
+function openCloudModalWithSecurity() {
+    requestSupervisorAccess(() => {
+        openCloudModal();
+    }, 'Introduce el PIN para configurar la sincronización en vivo');
+}
+
+// Inicializar Firebase y Seguridad al cargar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
     initFirebaseIfConfigured();
+    updateSupervisorUI();
 });
+
 

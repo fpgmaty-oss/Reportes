@@ -536,21 +536,35 @@
             </button>
             <button type="button" class="drawer-btn" onclick="loadSampleAutopickData(); toggleDrawer(false);">
                 <i class="material-icons text-purple">science</i> Cargar datos de prueba (Demo)
+                <span class="lock-badge"><i class="material-icons">lock</i> PIN</span>
             </button>
             <button type="button" class="drawer-btn danger-text" onclick="clearAllAutopickData(); toggleDrawer(false);">
                 <i class="material-icons text-red">delete_sweep</i> Borrar registros de Autopick
+                <span class="lock-badge"><i class="material-icons">lock</i> PIN</span>
             </button>
 
-            <div class="drawer-section-title" style="margin-top: 10px;">Sincronización en GitHub Pages</div>
-            <button type="button" class="drawer-btn" onclick="openCloudModal(); toggleDrawer(false);">
+            <div class="drawer-section-title" style="margin-top: 10px;">Administración & Seguridad</div>
+            <div id="supervisor-status-bar" style="display: none;">
+                <div class="supervisor-active-badge">
+                    <i class="material-icons" style="font-size: 16px;">verified_user</i> Modo Supervisor Activo
+                </div>
+                <button type="button" class="drawer-btn" style="margin-bottom: 8px; background: #fff1f2; color: #be123c;" onclick="logoutSupervisorSession(); toggleDrawer(false);">
+                    <i class="material-icons text-red">lock</i> Bloquear Modo Supervisor
+                </button>
+            </div>
+            <button type="button" class="drawer-btn" onclick="openCloudModalWithSecurity(); toggleDrawer(false);">
                 <i class="material-icons text-blue">cloud_sync</i> Sincronizar en Vivo (GitHub Pages)
+                <span class="lock-badge"><i class="material-icons">lock</i> PIN</span>
+            </button>
+            <button type="button" class="drawer-btn" onclick="openChangePinModal(); toggleDrawer(false);">
+                <i class="material-icons text-yellow">vpn_key</i> Cambiar PIN de Supervisor
             </button>
             <button type="button" class="drawer-btn" onclick="openGitHubGuideModal(); toggleDrawer(false);">
                 <i class="material-icons text-purple">terminal</i> Pasos para Publicar en GitHub
             </button>
 
             <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; padding: 0 4px; margin-top: 10px;">
-                En GitHub Pages, los celulares comparten datos en tiempo real mediante tu Google Sheet o Firebase (ambos 100% gratis).
+                Las opciones críticas están protegidas con PIN para que los colaboradores no puedan borrar registros ni alterar la configuración.
             </div>
         </div>
     </div>
@@ -650,6 +664,70 @@ git push -u origin main</pre>
                 <div style="display: flex; gap: 10px; margin-top: 16px;">
                     <button type="button" class="btn-sm btn-outline" style="flex: 1; justify-content: center; padding: 12px;" onclick="closeEditModal()">Cancelar</button>
                     <button type="submit" class="submit-btn" style="flex: 1; margin: 0; padding: 12px;">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin PIN Security Modal -->
+    <div class="drawer-backdrop" id="pin-modal-backdrop" style="z-index: 300;">
+        <div class="admin-pin-dialog">
+            <div class="admin-pin-icon">
+                <i class="material-icons">shield</i>
+            </div>
+            <h3>PIN de Supervisor</h3>
+            <p id="pin-modal-subtitle">Introduce el PIN de seguridad para acceder a esta opción protegida</p>
+            
+            <form id="admin-pin-form" onsubmit="handlePinSubmit(event)">
+                <div class="pin-input-wrap">
+                    <input type="password" id="admin-pin-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••" autocomplete="off" required>
+                    <button type="button" class="pin-eye-btn" onclick="togglePinVisibility('admin-pin-input', 'pin-eye-icon')" title="Mostrar/Ocultar PIN">
+                        <i class="material-icons" id="pin-eye-icon">visibility</i>
+                    </button>
+                </div>
+                <div id="pin-error-msg" class="pin-error-text" style="display:none;">PIN incorrecto. Inténtalo de nuevo.</div>
+                
+                <div class="pin-modal-actions">
+                    <button type="button" class="btn-sm btn-outline" onclick="closePinModal()">Cancelar</button>
+                    <button type="submit" class="btn-sm" style="background: var(--primary-blue); color: white; border: none; border-radius: var(--radius-sm); font-weight: 700;">
+                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">lock_open</i> Desbloquear
+                    </button>
+                </div>
+            </form>
+            <div class="pin-hint-text">
+                PIN inicial por defecto: <strong>1234</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change PIN Modal -->
+    <div class="drawer-backdrop" id="change-pin-modal-backdrop" style="z-index: 300;">
+        <div class="admin-pin-dialog">
+            <div class="admin-pin-icon" style="background: var(--warning-light); color: var(--warning-amber);">
+                <i class="material-icons">vpn_key</i>
+            </div>
+            <h3>Cambiar PIN de Supervisor</h3>
+            <p>Define un nuevo PIN para proteger las funciones críticas</p>
+            
+            <form id="change-pin-form" onsubmit="handleChangePinSubmit(event)">
+                <div class="form-group" style="text-align: left; margin-bottom: 12px;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">PIN Actual</label>
+                    <input type="password" id="current-pin-input" inputmode="numeric" maxlength="6" placeholder="PIN actual" required style="font-size: 14px; text-align: left;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 12px;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Nuevo PIN (4 a 6 dígitos)</label>
+                    <input type="password" id="new-pin-input" inputmode="numeric" maxlength="6" placeholder="Nuevo PIN" required style="font-size: 14px; text-align: left;">
+                </div>
+                <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-main);">Confirmar Nuevo PIN</label>
+                    <input type="password" id="confirm-pin-input" inputmode="numeric" maxlength="6" placeholder="Repite el nuevo PIN" required style="font-size: 14px; text-align: left;">
+                </div>
+                
+                <div class="pin-modal-actions">
+                    <button type="button" class="btn-sm btn-outline" onclick="closeChangePinModal()">Cancelar</button>
+                    <button type="submit" class="btn-sm" style="background: var(--primary-blue); color: white; border: none; border-radius: var(--radius-sm); font-weight: 700;">
+                        <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">check</i> Guardar
+                    </button>
                 </div>
             </form>
         </div>

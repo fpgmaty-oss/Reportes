@@ -1381,3 +1381,170 @@ body {
     background: #e2e8f0;
 }
 
+/* ==========================================================================
+   Admin PIN & Security Modal Styles
+   ========================================================================== */
+.admin-pin-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 380px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(4, 31, 65, 0.25);
+    z-index: 301;
+    text-align: center;
+    animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.admin-pin-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary-blue-light);
+    color: var(--primary-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+.admin-pin-icon i {
+    font-size: 28px;
+}
+
+.admin-pin-dialog h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark-blue);
+    margin-bottom: 6px;
+}
+
+.admin-pin-dialog p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    line-height: 1.4;
+}
+
+.pin-input-wrap {
+    position: relative;
+    max-width: 220px;
+    margin: 0 auto 12px;
+}
+
+.pin-input-wrap input {
+    width: 100%;
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 8px;
+    font-weight: 700;
+    padding: 10px 40px 10px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-alt);
+    color: var(--dark-blue);
+    transition: all 0.2s;
+    outline: none;
+}
+
+.pin-input-wrap input:focus {
+    border-color: var(--primary-blue);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 113, 206, 0.15);
+}
+
+.pin-input-wrap input.pin-error {
+    border-color: var(--danger-red);
+    animation: shakeInput 0.35s ease-in-out;
+}
+
+@keyframes shakeInput {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.pin-eye-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-error-text {
+    font-size: 12px;
+    color: var(--danger-red);
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.pin-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.pin-modal-actions button {
+    flex: 1;
+    padding: 10px 14px;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pin-hint-text {
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-color);
+}
+
+.drawer-btn .lock-badge {
+    margin-left: auto;
+    font-size: 10px;
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+.drawer-btn .lock-badge i {
+    font-size: 12px;
+}
+
+.supervisor-active-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+}
+
