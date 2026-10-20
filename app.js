@@ -1560,7 +1560,7 @@ function initFirebaseIfConfigured() {
 // ==========================================================================
 const PIN_STORAGE_KEY = 'reportes_supervisor_pin';
 const PIN_SESSION_KEY = 'reportes_supervisor_session';
-const DEFAULT_PIN = '1234';
+const DEFAULT_PIN = '1741';
 
 let pendingAdminAction = null;
 
