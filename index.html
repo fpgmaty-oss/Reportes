@@ -289,23 +289,24 @@
                 </div>
 
                 <!-- Gráfico Evolutivo -->
+                <!-- Gráfico de Cajas Devueltas -->
                 <div class="card card-chart">
                     <div class="chart-header">
                         <div class="chart-title-group">
-                            <i class="material-icons text-blue">show_chart</i>
-                            <h3>Evolutivo de Cajas Devueltas</h3>
+                            <i class="material-icons text-blue" id="chart-title-icon">bar_chart</i>
+                            <h3 id="chart-title-text">Cajas Devueltas por Día</h3>
                         </div>
                         <div class="chart-controls">
                             <select id="chart-period-select" onchange="renderAutopickChart()">
+                                <option value="7d" selected>Últimos 7 días</option>
                                 <option value="hoy">Hoy</option>
-                                <option value="7d">Últimos 7 días</option>
                                 <option value="todo">Histórico completo</option>
                             </select>
                             <select id="chart-type-select" onchange="renderAutopickChart()">
-                                <option value="acumulado">Curva Acumulativa</option>
+                                <option value="diario" selected>Cajas por Día (No acumulado)</option>
                                 <option value="motivo">Estante vs Dañado</option>
-                                <option value="bloques">Por Horas / Días</option>
                                 <option value="operador">Por Colaborador</option>
+                                <option value="acumulado">Curva Acumulativa</option>
                             </select>
                         </div>
                     </div>
@@ -317,7 +318,7 @@
                     <div class="chart-legend-stats" id="chart-legend-stats">
                         <div class="chart-legend-item">
                             <span class="chart-legend-dot" style="background:#0071ce;"></span>
-                            <span>Curva en tiempo real según cada anotación</span>
+                            <span>Cajas devueltas por cada día</span>
                         </div>
                     </div>
                 </div>

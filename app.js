@@ -772,28 +772,52 @@ function saveEditedRecord(e) {
 // ==========================================================================
 // GRÁFICO EVOLUTIVO (CHART.JS)
 // ==========================================================================
+const DIAS_SEMANA_COMPLETO = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
 function renderAutopickChart() {
     const canvas = document.getElementById('autopickChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
     const periodSelect = document.getElementById('chart-period-select');
     const typeSelect = document.getElementById('chart-type-select');
-    const period = periodSelect ? periodSelect.value : 'hoy';
-    const chartType = typeSelect ? typeSelect.value : 'acumulado';
+    const period = periodSelect ? periodSelect.value : '7d';
+    const chartType = typeSelect ? typeSelect.value : 'diario';
+
+    // Actualizar título dinámico del encabezado del gráfico
+    const titleText = document.getElementById('chart-title-text');
+    const titleIcon = document.getElementById('chart-title-icon');
+    if (titleText && titleIcon) {
+        if (chartType === 'diario' || chartType === 'bloques') {
+            titleIcon.textContent = 'bar_chart';
+            titleText.textContent = period === 'hoy' 
+                ? 'Cajas Devueltas Hoy (Por Horas)' 
+                : (period === '7d' ? 'Cajas Devueltas por Día (Últimos 7 días)' : 'Cajas Devueltas por Día (Histórico)');
+        } else if (chartType === 'acumulado') {
+            titleIcon.textContent = 'show_chart';
+            titleText.textContent = 'Curva Acumulativa en el Tiempo';
+        } else if (chartType === 'motivo') {
+            titleIcon.textContent = 'pie_chart';
+            titleText.textContent = 'Distribución: Estante vs Dañado';
+        } else if (chartType === 'operador') {
+            titleIcon.textContent = 'leaderboard';
+            titleText.textContent = 'Cajas Devueltas por Colaborador';
+        }
+    }
 
     let records = getAutopickRecords();
     const todayStr = getTodayDateString();
 
-    // 1. Filtrar por período
+    // 1. Filtrar registros por período
+    let filteredRecords = [...records];
     if (period === 'hoy') {
-        records = records.filter(r => r.fecha === todayStr);
+        filteredRecords = filteredRecords.filter(r => r.fecha === todayStr);
     } else if (period === '7d') {
         const limitMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        records = records.filter(r => (r.timestamp || 0) >= limitMs);
+        filteredRecords = filteredRecords.filter(r => (r.timestamp || 0) >= limitMs);
     }
 
-    // Ordenar cronológicamente (más antiguo a más reciente) para la evolución temporal
-    const sorted = [...records].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    // Ordenar cronológicamente (más antiguo a más reciente)
+    const sorted = [...filteredRecords].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
     // Si ya existe instancia previa, destruirla
     if (autopickChartInstance) {
@@ -805,17 +829,242 @@ function renderAutopickChart() {
     const legendStats = document.getElementById('chart-legend-stats');
 
     // Manejo de estado vacío
-    if (sorted.length === 0) {
+    if (sorted.length === 0 && (period === 'hoy' || records.length === 0)) {
         if (legendStats) {
-            legendStats.innerHTML = `<span style="color: var(--text-muted);">Sin datos para el período seleccionado. Agrega anotaciones para trazar la curva.</span>`;
+            legendStats.innerHTML = `<span style="color: var(--text-muted);">Sin datos registrados para el período seleccionado.</span>`;
         }
         return;
     }
 
     // ======================================================================
-    // MODO 1: CURVA ACUMULATIVA (EVOLUTIVO EN EL TIEMPO)
+    // MODO 1: CAJAS POR DÍA (NO ACUMULADO) - MODO PRINCIPAL
     // ======================================================================
-    if (chartType === 'acumulado') {
+    if (chartType === 'diario' || chartType === 'bloques') {
+        let items = [];
+
+        // CASO A: Últimos 7 días (mostramos los 7 días de corrido con nombres Lunes, Martes, etc.)
+        if (period === '7d') {
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i, 12, 0, 0);
+                const yStr = d.getFullYear();
+                const mStr = String(d.getMonth() + 1).padStart(2, '0');
+                const dStr = String(d.getDate()).padStart(2, '0');
+                const dateKey = `${yStr}-${mStr}-${dStr}`;
+                const dayName = DIAS_SEMANA_COMPLETO[d.getDay()];
+                const isToday = (i === 0);
+
+                items.push({
+                    dateKey,
+                    dayName,
+                    isToday,
+                    displayLabel: `${dayName} ${dStr}/${mStr}`,
+                    chartLabel: [dayName, `${dStr}/${mStr}`],
+                    total: 0,
+                    estante: 0,
+                    danado: 0
+                });
+            }
+
+            records.forEach(r => {
+                const item = items.find(it => it.dateKey === r.fecha);
+                if (item) {
+                    const qty = Number(r.cantidad) || 0;
+                    item.total += qty;
+                    if (isDanado(r.motivo)) {
+                        item.danado += qty;
+                    } else {
+                        item.estante += qty;
+                    }
+                }
+            });
+        }
+        // CASO B: Período 'hoy' (se agrupan por bloques horarios puntuales del día)
+        else if (period === 'hoy') {
+            const hourMap = {};
+            sorted.forEach(r => {
+                const horaRaw = r.hora || '12:00';
+                const hourPrefix = horaRaw.split(':')[0] + ':00';
+                if (!hourMap[hourPrefix]) {
+                    hourMap[hourPrefix] = {
+                        hourKey: hourPrefix,
+                        displayLabel: `${hourPrefix} hrs`,
+                        chartLabel: hourPrefix,
+                        total: 0,
+                        estante: 0,
+                        danado: 0
+                    };
+                }
+                const qty = Number(r.cantidad) || 0;
+                hourMap[hourPrefix].total += qty;
+                if (isDanado(r.motivo)) {
+                    hourMap[hourPrefix].danado += qty;
+                } else {
+                    hourMap[hourPrefix].estante += qty;
+                }
+            });
+
+            const sortedHours = Object.keys(hourMap).sort();
+            items = sortedHours.map(h => hourMap[h]);
+        }
+        // CASO C: Histórico completo ('todo') agrupado día por día
+        else {
+            const dateMap = {};
+            records.forEach(r => {
+                if (!r.fecha) return;
+                if (!dateMap[r.fecha]) {
+                    const parts = r.fecha.split('-').map(Number);
+                    const dt = (parts.length === 3) ? new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0) : new Date();
+                    const dayName = !isNaN(dt.getTime()) ? DIAS_SEMANA_COMPLETO[dt.getDay()] : 'Día';
+                    const dStr = String(parts[2] || '').padStart(2, '0');
+                    const mStr = String(parts[1] || '').padStart(2, '0');
+                    dateMap[r.fecha] = {
+                        dateKey: r.fecha,
+                        dayName,
+                        isToday: r.fecha === todayStr,
+                        displayLabel: `${dayName} ${dStr}/${mStr}`,
+                        chartLabel: [dayName, `${dStr}/${mStr}`],
+                        total: 0,
+                        estante: 0,
+                        danado: 0
+                    };
+                }
+                const qty = Number(r.cantidad) || 0;
+                dateMap[r.fecha].total += qty;
+                if (isDanado(r.motivo)) {
+                    dateMap[r.fecha].danado += qty;
+                } else {
+                    dateMap[r.fecha].estante += qty;
+                }
+            });
+            const sortedDates = Object.keys(dateMap).sort();
+            items = sortedDates.map(k => dateMap[k]);
+        }
+
+        const labels = items.map(it => it.chartLabel);
+        const dataValues = items.map(it => it.total);
+        const backgroundColors = items.map(it => it.isToday ? '#ffc220' : '#0071ce');
+        const borderColors = items.map(it => it.isToday ? '#f59e0b' : '#005bb5');
+
+        // Plugin custom para renderizar el número de cajas exacto encima de cada barra
+        const barLabelsPlugin = {
+            id: 'barLabelsPlugin',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((bar, index) => {
+                        const val = dataset.data[index];
+                        if (val > 0) {
+                            ctx.save();
+                            ctx.fillStyle = '#041f41';
+                            ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(`${val} cj`, bar.x, bar.y - 4);
+                            ctx.restore();
+                        }
+                    });
+                });
+            }
+        };
+
+        autopickChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Cajas Devueltas',
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    maxBarThickness: 48
+                }]
+            },
+            plugins: [barLabelsPlugin],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 22 }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#041f41',
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        padding: 12,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const idx = tooltipItems[0].dataIndex;
+                                return items[idx] ? items[idx].displayLabel : tooltipItems[0].label;
+                            },
+                            label: function(context) {
+                                return ` Cajas devueltas: ${context.raw} cajas`;
+                            },
+                            afterLabel: function(context) {
+                                const it = items[context.dataIndex];
+                                if (it && (it.estante > 0 || it.danado > 0)) {
+                                    return `   • Estante: ${it.estante} cj | Dañado: ${it.danado} cj`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 11 },
+                            callback: (v) => `${v} cj`
+                        },
+                        grid: { color: 'rgba(0,0,0,0.06)' }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 11, weight: '600' },
+                            maxRotation: 0
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        if (legendStats) {
+            const totalPeriodo = dataValues.reduce((s, v) => s + v, 0);
+            let topItem = null;
+            items.forEach(it => {
+                if (!topItem || it.total > topItem.total) {
+                    topItem = it;
+                }
+            });
+
+            legendStats.innerHTML = `
+                <div class="chart-legend-item">
+                    <span class="chart-legend-dot" style="background:#0071ce;"></span>
+                    <span>Total período: <strong>${totalPeriodo} cajas</strong></span>
+                </div>
+                ${topItem && topItem.total > 0 ? `
+                <div class="chart-legend-item">
+                    <span class="chart-legend-dot" style="background:#ffc220;"></span>
+                    <span>Día con más cajas: <strong>${topItem.dayName || topItem.displayLabel} (${topItem.total} cajas)</strong></span>
+                </div>
+                ` : ''}
+                <div class="chart-legend-item">
+                    <span style="color: var(--text-muted); font-size: 11px;">* Cifras puntuales diarias (no acumuladas)</span>
+                </div>
+            `;
+        }
+    } 
+    // ======================================================================
+    // MODO 2: CURVA ACUMULATIVA (HISTÓRICO CONTINUO)
+    // ======================================================================
+    else if (chartType === 'acumulado') {
         let runningTotal = 0;
         const labels = [];
         const dataPoints = [];
@@ -892,69 +1141,6 @@ function renderAutopickChart() {
                 <div class="chart-legend-item">
                     <span class="chart-legend-dot" style="background:#0071ce;"></span>
                     <span><strong>Total acumulado en período:</strong> ${runningTotal} cajas devueltas</span>
-                </div>
-            `;
-        }
-    } 
-    // ======================================================================
-    // MODO 2: BARRAS POR HORAS / BLOQUES
-    // ======================================================================
-    else if (chartType === 'bloques') {
-        const timeBlocks = {};
-
-        sorted.forEach(r => {
-            let key;
-            if (period === 'hoy') {
-                const hourPrefix = (r.hora || '12:00').split(':')[0] + ':00';
-                key = hourPrefix;
-            } else {
-                key = r.fecha;
-            }
-            timeBlocks[key] = (timeBlocks[key] || 0) + Number(r.cantidad);
-        });
-
-        const labels = Object.keys(timeBlocks);
-        const data = Object.values(timeBlocks);
-
-        autopickChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Cajas ingresadas en bloque',
-                    data,
-                    backgroundColor: '#ffc220',
-                    borderColor: '#f59e0b',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { font: { size: 11 } },
-                        grid: { color: 'rgba(0,0,0,0.06)' }
-                    },
-                    x: {
-                        ticks: { font: { size: 11 } },
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
-
-        if (legendStats) {
-            const maxVal = Math.max(...data);
-            legendStats.innerHTML = `
-                <div class="chart-legend-item">
-                    <span class="chart-legend-dot" style="background:#ffc220;"></span>
-                    <span>Pico máximo en bloque: <strong>${maxVal} cajas</strong></span>
                 </div>
             `;
         }
