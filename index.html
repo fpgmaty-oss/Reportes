@@ -51,8 +51,8 @@
             </div>
 
             <div class="card-grid">
-                <!-- BOTÓN PRINCIPAL NUEVO: Cajas Autopick Devueltas -->
-                <button type="button" class="square-btn bg-purple" onclick="navigateTo('autopick-view')">
+                <!-- Cajas Autopick Devueltas -->
+                <button type="button" class="square-btn bg-purple" onclick="navigateTo('autopick-view'); switchAutopickTab('devueltas')">
                     <i class="material-icons">all_inbox</i>
                     <div class="square-btn-content">
                         <span class="square-btn-title">Cajas Autopick Devueltas</span>
@@ -60,6 +60,18 @@
                     </div>
                     <span class="square-btn-badge" id="home-autopick-badge">
                         <span id="home-autopick-count">0</span> hoy
+                    </span>
+                </button>
+
+                <!-- Pallets Armados para Turno Nocturno -->
+                <button type="button" class="square-btn bg-teal" onclick="navigateTo('autopick-view'); switchAutopickTab('dejadas')">
+                    <i class="material-icons">local_shipping</i>
+                    <div class="square-btn-content">
+                        <span class="square-btn-title">Pallets Armados T. Nocturno</span>
+                        <span class="square-btn-sub">Pallets armados para entregar al turno noche y comparativa</span>
+                    </div>
+                    <span class="square-btn-badge" id="home-dejadas-badge">
+                        <span id="home-dejadas-count">0</span> hoy
                     </span>
                 </button>
 
@@ -93,7 +105,7 @@
         </div>
 
         <!-- ===============================================================
-             2. Cajas Autopick Devueltas View (NUEVO & COMPLETO)
+             2. Cajas Autopick (Módulo con Tabs: Devueltas | Dejadas | Comparativa)
              =============================================================== -->
         <div id="autopick-view" class="view">
             <!-- View Header -->
@@ -103,8 +115,8 @@
                         <i class="material-icons">arrow_back</i>
                     </button>
                     <div class="view-title-group">
-                        <h2>Cajas Autopick Devueltas</h2>
-                        <span class="view-subtitle">Registro por colaborador y evolutivo temporal</span>
+                        <h2 id="autopick-view-title">Control de Cajas Autopick</h2>
+                        <span class="view-subtitle" id="autopick-view-subtitle">Devueltas, pallets armados y análisis comparativo</span>
                     </div>
                 </div>
                 <div class="view-actions">
@@ -128,217 +140,518 @@
                 </button>
             </div>
 
-            <!-- KPI Cards Grid -->
-            <div class="kpi-grid">
-                <div class="kpi-card highlight-kpi">
-                    <div class="kpi-icon-wrap bg-blue-subtle">
-                        <i class="material-icons">all_inbox</i>
-                    </div>
-                    <div class="kpi-content">
-                        <span class="kpi-label">Total Cajas Hoy</span>
-                        <div class="kpi-value-row">
-                            <span class="kpi-number" id="kpi-cajas-hoy">0</span>
-                            <span class="kpi-unit">cajas</span>
-                        </div>
-                        <span class="kpi-subtext" id="kpi-cajas-hoy-sub">Sin registros hoy</span>
-                    </div>
-                </div>
-
-                <div class="kpi-card">
-                    <div class="kpi-icon-wrap bg-blue-subtle">
-                        <i class="material-icons text-blue">shelves</i>
-                    </div>
-                    <div class="kpi-content">
-                        <span class="kpi-label">Capacidad de Estante</span>
-                        <div class="kpi-value-row">
-                            <span class="kpi-number" id="kpi-cajas-estante">0</span>
-                            <span class="kpi-unit">cajas</span>
-                        </div>
-                        <span class="kpi-subtext" id="kpi-estante-sub">0% del total hoy</span>
-                    </div>
-                </div>
-
-                <div class="kpi-card">
-                    <div class="kpi-icon-wrap bg-red-subtle">
-                        <i class="material-icons text-red">report_problem</i>
-                    </div>
-                    <div class="kpi-content">
-                        <span class="kpi-label">Producto Dañado</span>
-                        <div class="kpi-value-row">
-                            <span class="kpi-number" id="kpi-cajas-danado">0</span>
-                            <span class="kpi-unit">cajas</span>
-                        </div>
-                        <span class="kpi-subtext" id="kpi-danado-sub">0% del total hoy</span>
-                    </div>
-                </div>
-
-                <div class="kpi-card">
-                    <div class="kpi-icon-wrap bg-yellow-subtle">
-                        <i class="material-icons text-yellow">schedule</i>
-                    </div>
-                    <div class="kpi-content">
-                        <span class="kpi-label">Último Ingreso</span>
-                        <div class="kpi-value-row">
-                            <span class="kpi-number-sm" id="kpi-ultimo-quien">--</span>
-                        </div>
-                        <span class="kpi-subtext" id="kpi-ultimo-detalle">Esperando registros</span>
-                    </div>
-                </div>
+            <!-- ==== TABS DE NAVEGACIÓN ==== -->
+            <div class="module-tabs" id="autopick-tabs">
+                <button type="button" class="module-tab-btn tab-devueltas active" id="tab-btn-devueltas" onclick="switchAutopickTab('devueltas')">
+                    <i class="material-icons" style="font-size:18px;">all_inbox</i>
+                    Cajas Devueltas
+                    <span class="module-tab-badge" id="tab-badge-devueltas">0</span>
+                </button>
+                <button type="button" class="module-tab-btn tab-dejadas" id="tab-btn-dejadas" onclick="switchAutopickTab('dejadas')">
+                    <i class="material-icons" style="font-size:18px;">local_shipping</i>
+                    Pallets Armados
+                    <span class="module-tab-badge" id="tab-badge-dejadas">0</span>
+                </button>
+                <button type="button" class="module-tab-btn tab-comparativa" id="tab-btn-comparativa" onclick="switchAutopickTab('comparativa')">
+                    <i class="material-icons" style="font-size:18px;">balance</i>
+                    Comparativa
+                </button>
             </div>
 
-            <!-- Contenedor Responsive 2 Columnas para Desktop (Formulario + Gráfico) -->
-            <div class="desktop-two-col">
-                <!-- Formulario de Anotación Rápida -->
-                <div class="card">
-                    <div class="card-title-bar">
-                        <i class="material-icons text-blue">add_circle</i>
-                        <h3>Anotar Cajas Devueltas</h3>
+            <!-- ==================== TAB 1: CAJAS DEVUELTAS ==================== -->
+            <div id="tab-devueltas" class="autopick-tab-panel">
+                <!-- KPI Cards Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card highlight-kpi">
+                        <div class="kpi-icon-wrap bg-blue-subtle">
+                            <i class="material-icons">all_inbox</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Total Cajas Hoy</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="kpi-cajas-hoy">0</span>
+                                <span class="kpi-unit">cajas</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-cajas-hoy-sub">Sin registros hoy</span>
+                        </div>
                     </div>
 
-                    <form id="autopick-form">
-                        <!-- Quién anota -->
-                        <div class="form-group">
-                            <label for="autopick-quien">
-                                <i class="material-icons icon-sm">person</i> ¿Quién anota las cajas?
-                            </label>
-                            <input type="text" id="autopick-quien" list="recent-operators-list" placeholder="Nombre o iniciales (ej: Carlos M.)" required autocomplete="off">
-                            <datalist id="recent-operators-list"></datalist>
-
-                            <div class="quick-tags-container" id="quick-operators-container" style="display:none;">
-                                <span class="quick-tags-label">Frecuentes:</span>
-                                <div class="quick-tags-list" id="quick-operators-tags"></div>
-                            </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap bg-blue-subtle">
+                            <i class="material-icons text-blue">shelves</i>
                         </div>
-
-                        <!-- Cantidad con botones rápidos -->
-                        <div class="form-group">
-                            <label for="autopick-cantidad">
-                                <i class="material-icons icon-sm">inventory_2</i> Número de Cajas Devueltas
-                            </label>
-                            <div class="counter-input-row">
-                                <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(-1)" title="Restar 1">-1</button>
-                                <input type="number" id="autopick-cantidad" min="1" max="9999" value="1" required class="counter-display-input">
-                                <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(1)" title="Sumar 1">+1</button>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Capacidad de Estante</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="kpi-cajas-estante">0</span>
+                                <span class="kpi-unit">cajas</span>
                             </div>
-                            <!-- Presets rápidos -->
-                            <div class="quick-presets-row">
-                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(5)">+5</button>
-                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(10)">+10</button>
-                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(20)">+20</button>
-                                <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(50)">+50</button>
-                                <button type="button" class="preset-btn reset-preset" onclick="resetAutopickInput()" title="Volver a 1">1</button>
-                            </div>
+                            <span class="kpi-subtext" id="kpi-estante-sub">0% del total hoy</span>
                         </div>
+                    </div>
 
-                        <!-- Motivo Devolución (Exclusivo: Capacidad de estante vs Producto dañado) -->
-                        <div class="form-group">
-                            <label>
-                                <i class="material-icons icon-sm">category</i> Motivo de Devolución
-                            </label>
-                            <div class="motivo-toggle-group">
-                                <label class="motivo-btn-card">
-                                    <input type="radio" name="autopick-motivo" value="Capacidad de estante" checked>
-                                    <div class="motivo-card-content bg-estante">
-                                        <i class="material-icons text-blue">shelves</i>
-                                        <div class="motivo-card-text">
-                                            <span class="motivo-title">Capacidad de estante</span>
-                                            <span class="motivo-desc">Sin espacio en góndola/pasillo</span>
-                                        </div>
-                                    </div>
-                                </label>
-                                <label class="motivo-btn-card">
-                                    <input type="radio" name="autopick-motivo" value="Producto dañado">
-                                    <div class="motivo-card-content bg-danado">
-                                        <i class="material-icons text-red">report_problem</i>
-                                        <div class="motivo-card-text">
-                                            <span class="motivo-title">Producto dañado</span>
-                                            <span class="motivo-desc">Merma, golpe o caja rota</span>
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap bg-red-subtle">
+                            <i class="material-icons text-red">report_problem</i>
                         </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Producto Dañado</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="kpi-cajas-danado">0</span>
+                                <span class="kpi-unit">cajas</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-danado-sub">0% del total hoy</span>
+                        </div>
+                    </div>
 
-                        <div class="form-row-2">
-                            <!-- Turno -->
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap bg-yellow-subtle">
+                            <i class="material-icons text-yellow">schedule</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Último Ingreso</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number-sm" id="kpi-ultimo-quien">--</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-ultimo-detalle">Esperando registros</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenedor 2 Columnas: Formulario + Gráfico -->
+                <div class="desktop-two-col">
+                    <!-- Formulario de Anotación Rápida -->
+                    <div class="card">
+                        <div class="card-title-bar">
+                            <i class="material-icons text-blue">add_circle</i>
+                            <h3>Anotar Cajas Devueltas</h3>
+                        </div>
+                        <form id="autopick-form">
                             <div class="form-group">
-                                <label for="autopick-turno">
-                                    <i class="material-icons icon-sm">schedule</i> Turno
+                                <label for="autopick-quien">
+                                    <i class="material-icons icon-sm">person</i> ¿Quién anota las cajas?
                                 </label>
-                                <select id="autopick-turno" required>
-                                    <option value="Mañana">Mañana (07:00 - 15:00)</option>
-                                    <option value="Tarde">Tarde (15:00 - 23:00)</option>
-                                    <option value="Noche">Noche (23:00 - 07:00)</option>
+                                <input type="text" id="autopick-quien" list="recent-operators-list" placeholder="Nombre o iniciales (ej: Carlos M.)" required autocomplete="off">
+                                <datalist id="recent-operators-list"></datalist>
+                                <div class="quick-tags-container" id="quick-operators-container" style="display:none;">
+                                    <span class="quick-tags-label">Frecuentes:</span>
+                                    <div class="quick-tags-list" id="quick-operators-tags"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="autopick-cantidad">
+                                    <i class="material-icons icon-sm">inventory_2</i> Número de Cajas Devueltas
+                                </label>
+                                <div class="counter-input-row">
+                                    <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(-1)">-1</button>
+                                    <input type="number" id="autopick-cantidad" min="1" max="9999" value="1" required class="counter-display-input">
+                                    <button type="button" class="counter-adjust-btn" onclick="adjustAutopickCount(1)">+1</button>
+                                </div>
+                                <div class="quick-presets-row">
+                                    <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(5)">+5</button>
+                                    <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(10)">+10</button>
+                                    <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(20)">+20</button>
+                                    <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(50)">+50</button>
+                                    <button type="button" class="preset-btn" onclick="setOrAddAutopickCount(80)" title="1 pallet">+80</button>
+                                    <button type="button" class="preset-btn reset-preset" onclick="resetAutopickInput()">1</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="material-icons icon-sm">category</i> Motivo de Devolución</label>
+                                <div class="motivo-toggle-group">
+                                    <label class="motivo-btn-card">
+                                        <input type="radio" name="autopick-motivo" value="Capacidad de estante" checked>
+                                        <div class="motivo-card-content bg-estante">
+                                            <i class="material-icons text-blue">shelves</i>
+                                            <div class="motivo-card-text">
+                                                <span class="motivo-title">Capacidad de estante</span>
+                                                <span class="motivo-desc">Sin espacio en góndola/pasillo</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="motivo-btn-card">
+                                        <input type="radio" name="autopick-motivo" value="Producto dañado">
+                                        <div class="motivo-card-content bg-danado">
+                                            <i class="material-icons text-red">report_problem</i>
+                                            <div class="motivo-card-text">
+                                                <span class="motivo-title">Producto dañado</span>
+                                                <span class="motivo-desc">Merma, golpe o caja rota</span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="autopick-turno"><i class="material-icons icon-sm">schedule</i> Turno</label>
+                                    <select id="autopick-turno" required>
+                                        <option value="Mañana">Mañana (07:00 - 15:00)</option>
+                                        <option value="Tarde">Tarde (15:00 - 23:00)</option>
+                                        <option value="Noche">Noche (23:00 - 07:00)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="autopick-obs"><i class="material-icons icon-sm">edit_note</i> Observación (Opcional)</label>
+                                    <input type="text" id="autopick-obs" placeholder="Ej: Pasillo 3, pallet alto...">
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn" id="autopick-submit-btn">
+                                <i class="material-icons">save</i>
+                                <span>Guardar Cajas Devueltas</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Gráfico Evolutivo -->
+                    <div class="card card-chart">
+                        <div class="chart-header">
+                            <div class="chart-title-group">
+                                <i class="material-icons text-blue" id="chart-title-icon">bar_chart</i>
+                                <h3 id="chart-title-text">Cajas Devueltas por Día</h3>
+                            </div>
+                            <div class="chart-controls">
+                                <select id="chart-period-select" onchange="renderAutopickChart()">
+                                    <option value="7d" selected>Últimos 7 días</option>
+                                    <option value="hoy">Hoy</option>
+                                    <option value="todo">Histórico completo</option>
+                                </select>
+                                <select id="chart-type-select" onchange="renderAutopickChart()">
+                                    <option value="diario" selected>Cajas por Día (No acumulado)</option>
+                                    <option value="motivo">Estante vs Dañado</option>
+                                    <option value="operador">Por Colaborador</option>
+                                    <option value="acumulado">Curva Acumulativa</option>
                                 </select>
                             </div>
-
-                            <!-- Observaciones opcionales -->
-                            <div class="form-group">
-                                <label for="autopick-obs">
-                                    <i class="material-icons icon-sm">edit_note</i> Observación (Opcional)
-                                </label>
-                                <input type="text" id="autopick-obs" placeholder="Ej: Pasillo 3, pallet alto...">
+                        </div>
+                        <div class="chart-container-wrapper">
+                            <canvas id="autopickChart"></canvas>
+                        </div>
+                        <div class="chart-legend-stats" id="chart-legend-stats">
+                            <div class="chart-legend-item">
+                                <span class="chart-legend-dot" style="background:#0071ce;"></span>
+                                <span>Cajas devueltas por cada día</span>
                             </div>
                         </div>
-
-                        <button type="submit" class="submit-btn" id="autopick-submit-btn">
-                            <i class="material-icons">save</i>
-                            <span>Guardar Registro de Cajas</span>
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
-                <!-- Gráfico Evolutivo -->
-                <!-- Gráfico de Cajas Devueltas -->
-                <div class="card card-chart">
-                    <div class="chart-header">
-                        <div class="chart-title-group">
-                            <i class="material-icons text-blue" id="chart-title-icon">bar_chart</i>
-                            <h3 id="chart-title-text">Cajas Devueltas por Día</h3>
+                <!-- Historial Detallado de Anotaciones -->
+                <div class="card">
+                    <div class="history-header">
+                        <div class="history-title-group">
+                            <i class="material-icons text-blue">history</i>
+                            <h3>Historial — Cajas Devueltas</h3>
+                            <span class="history-counter-badge" id="history-total-count">0</span>
                         </div>
-                        <div class="chart-controls">
-                            <select id="chart-period-select" onchange="renderAutopickChart()">
-                                <option value="7d" selected>Últimos 7 días</option>
-                                <option value="hoy">Hoy</option>
-                                <option value="todo">Histórico completo</option>
-                            </select>
-                            <select id="chart-type-select" onchange="renderAutopickChart()">
-                                <option value="diario" selected>Cajas por Día (No acumulado)</option>
-                                <option value="motivo">Estante vs Dañado</option>
-                                <option value="operador">Por Colaborador</option>
-                                <option value="acumulado">Curva Acumulativa</option>
-                            </select>
+                        <div class="history-filters">
+                            <input type="text" id="history-search" placeholder="Buscar por persona, motivo o nota..." oninput="filterHistoryList()">
                         </div>
                     </div>
-
-                    <div class="chart-container-wrapper">
-                        <canvas id="autopickChart"></canvas>
-                    </div>
-
-                    <div class="chart-legend-stats" id="chart-legend-stats">
-                        <div class="chart-legend-item">
-                            <span class="chart-legend-dot" style="background:#0071ce;"></span>
-                            <span>Cajas devueltas por cada día</span>
-                        </div>
-                    </div>
+                    <div id="history-list" class="history-list"></div>
                 </div>
             </div>
 
-            <!-- Historial Detallado de Anotaciones -->
-            <div class="card">
-                <div class="history-header">
-                    <div class="history-title-group">
-                        <i class="material-icons text-blue">history</i>
-                        <h3>Historial de Anotaciones</h3>
-                        <span class="history-counter-badge" id="history-total-count">0</span>
+            <!-- ==================== TAB 2: PALLETS ARMADOS PARA TURNO NOCTURNO ==================== -->
+            <div id="tab-dejadas" class="autopick-tab-panel" style="display:none;">
+                <!-- KPI Cards Grid Dejadas -->
+                <div class="kpi-grid">
+                    <div class="kpi-card highlight-kpi-teal">
+                        <div class="kpi-icon-wrap" style="background:#ccfbf1; color:#0d9488;">
+                            <i class="material-icons">move_to_inbox</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Cajas Armadas Hoy</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="kpi-dej-hoy">0</span>
+                                <span class="kpi-unit">cajas</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-dej-hoy-sub">Sin registros hoy</span>
+                        </div>
                     </div>
-                    <div class="history-filters">
-                        <input type="text" id="history-search" placeholder="Buscar por persona, motivo o nota..." oninput="filterHistoryList()">
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap bg-green-subtle">
+                            <i class="material-icons text-green">trending_up</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Total Histórico</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="kpi-dej-total">0</span>
+                                <span class="kpi-unit">cajas</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-dej-total-sub">0 registros en total</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap bg-yellow-subtle">
+                            <i class="material-icons text-yellow">schedule</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Último Ingreso</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number-sm" id="kpi-dej-ultimo">--</span>
+                            </div>
+                            <span class="kpi-subtext" id="kpi-dej-ultimo-det">Esperando registros</span>
+                        </div>
                     </div>
                 </div>
 
-                <div id="history-list" class="history-list">
-                    <!-- Se genera dinámicamente -->
+                <!-- Contenedor 2 Columnas: Formulario + Gráfico -->
+                <div class="desktop-two-col">
+                    <!-- Formulario Cajas Dejadas -->
+                    <div class="card">
+                        <div class="card-title-bar">
+                            <i class="material-icons" style="color:#0d9488;">add_circle</i>
+                            <h3>Registrar Pallets Armados para Turno Nocturno</h3>
+                        </div>
+                        <form id="dejadas-form">
+                            <div class="form-group">
+                                <label for="dej-quien">
+                                    <i class="material-icons icon-sm">person</i> ¿Quién arma / registra?
+                                </label>
+                                <input type="text" id="dej-quien" list="dej-operators-list" placeholder="Nombre o iniciales" required autocomplete="off">
+                                <datalist id="dej-operators-list"></datalist>
+                                <div class="quick-tags-container" id="dej-operators-container" style="display:none;">
+                                    <span class="quick-tags-label">Frecuentes:</span>
+                                    <div class="quick-tags-list" id="dej-operators-tags"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dej-cantidad">
+                                    <i class="material-icons icon-sm">inventory_2</i> Número de Cajas para Pallet
+                                </label>
+                                <div class="counter-input-row">
+                                    <button type="button" class="counter-adjust-btn" onclick="adjustDejCount(-1)">-1</button>
+                                    <input type="number" id="dej-cantidad" min="1" max="9999" value="80" required class="counter-display-input" style="color:#0d9488 !important;">
+                                    <button type="button" class="counter-adjust-btn" onclick="adjustDejCount(1)">+1</button>
+                                </div>
+                                <div class="quick-presets-row">
+                                    <button type="button" class="pallet-preset-btn" onclick="setDejCount(80)" title="1 pallet = 80 cajas">1 pallet (80)</button>
+                                    <button type="button" class="pallet-preset-btn" onclick="setDejCount(160)" title="2 pallets = 160 cajas">2 plt (160)</button>
+                                    <button type="button" class="pallet-preset-btn" onclick="setDejCount(240)" title="3 pallets = 240 cajas">3 plt (240)</button>
+                                    <button type="button" class="pallet-preset-btn" onclick="setDejCount(400)" title="5 pallets = 400 cajas">5 plt (400)</button>
+                                </div>
+                                <div class="pallet-calc-box" id="dej-pallet-calc">
+                                    <div class="pallet-calc-info">
+                                        <i class="material-icons">local_shipping</i>
+                                        <span>Equivale a:</span>
+                                    </div>
+                                    <span class="pallet-calc-val" id="dej-pallet-val">1 pallet + 0 cj</span>
+                                </div>
+                            </div>
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="dej-turno"><i class="material-icons icon-sm">schedule</i> Turno</label>
+                                    <select id="dej-turno" required>
+                                        <option value="Mañana">Mañana (07:00 - 15:00)</option>
+                                        <option value="Tarde">Tarde (15:00 - 23:00)</option>
+                                        <option value="Noche">Noche (23:00 - 07:00)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dej-obs"><i class="material-icons icon-sm">edit_note</i> Observación (Opcional)</label>
+                                    <input type="text" id="dej-obs" placeholder="Ej: 2 pallets de lácteos...">
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-btn" id="dej-submit-btn" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);">
+                                <i class="material-icons">save</i>
+                                <span>Guardar Pallet Armado</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Gráfico Pallets Armados -->
+                    <div class="card card-chart">
+                        <div class="chart-header">
+                            <div class="chart-title-group">
+                                <i class="material-icons" style="color:#0d9488;">bar_chart</i>
+                                <h3>Cajas Armadas por Día</h3>
+                            </div>
+                            <div class="chart-controls">
+                                <select id="dej-chart-period" onchange="renderDejChart()">
+                                    <option value="7d" selected>Últimos 7 días</option>
+                                    <option value="hoy">Hoy</option>
+                                    <option value="todo">Histórico completo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container-wrapper">
+                            <canvas id="dejChart"></canvas>
+                        </div>
+                        <div class="chart-legend-stats" id="dej-chart-legend">
+                            <div class="chart-legend-item">
+                                <span class="chart-legend-dot" style="background:#0d9488;"></span>
+                                <span>Cajas armadas en pallets por día</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial Pallets Armados -->
+                <div class="card">
+                    <div class="history-header">
+                        <div class="history-title-group">
+                            <i class="material-icons" style="color:#0d9488;">history</i>
+                            <h3>Historial — Pallets Armados</h3>
+                            <span class="history-counter-badge" id="dej-history-count">0</span>
+                        </div>
+                        <div class="history-filters">
+                            <input type="text" id="dej-history-search" placeholder="Buscar por persona, turno o nota..." oninput="filterDejHistoryList()">
+                        </div>
+                    </div>
+                    <div id="dej-history-list" class="history-list"></div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 3: COMPARATIVA ==================== -->
+            <div id="tab-comparativa" class="autopick-tab-panel" style="display:none;">
+                <!-- Selector de período para comparativa -->
+                <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+                    <select id="comp-period-select" onchange="renderComparativaTab()" style="padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-size:13px; font-family:inherit; background:white;">
+                        <option value="hoy">Hoy</option>
+                        <option value="7d" selected>Últimos 7 días</option>
+                        <option value="todo">Histórico completo</option>
+                    </select>
+                </div>
+
+                <!-- Tarjeta de Balance General -->
+                <div class="balance-card-summary">
+                    <div class="balance-header-row">
+                        <div class="balance-title">
+                            <i class="material-icons" style="color:#1e3a8a;">balance</i>
+                            Contraste Armados vs Devueltas
+                        </div>
+                        <span class="balance-badge-rate" id="comp-rate-badge">—</span>
+                    </div>
+                    <!-- Barra de progreso visual -->
+                    <div class="balance-progress-track" id="comp-progress-track">
+                        <div class="balance-progress-fill-repuestas" id="comp-bar-repuestas" style="width:0%;"></div>
+                        <div class="balance-progress-fill-devueltas" id="comp-bar-devueltas" style="width:0%;"></div>
+                    </div>
+                    <div class="balance-stats-legend">
+                        <div class="balance-legend-item">
+                            <span class="legend-dot-sq" style="background:#10b981;"></span>
+                            <span>Repuestas al estante: <strong id="comp-leg-repuestas">0</strong></span>
+                        </div>
+                        <div class="balance-legend-item">
+                            <span class="legend-dot-sq" style="background:#ef4444;"></span>
+                            <span>Devueltas sin poner: <strong id="comp-leg-devueltas">0</strong></span>
+                        </div>
+                        <div class="balance-legend-item">
+                            <span class="legend-dot-sq" style="background:#0d9488;"></span>
+                            <span>Total armadas: <strong id="comp-leg-recibidas">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs Comparativa -->
+                <div class="kpi-grid" style="margin-bottom:20px;">
+                    <div class="kpi-card highlight-kpi-teal">
+                        <div class="kpi-icon-wrap" style="background:#ccfbf1; color:#0d9488;">
+                            <i class="material-icons">move_to_inbox</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Cajas Armadas en Pallets</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="comp-kpi-recibidas">0</span>
+                                <span class="kpi-unit">cj</span>
+                            </div>
+                            <span class="kpi-subtext" id="comp-kpi-recibidas-plt">≈ 0 pallets</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card highlight-kpi-red">
+                        <div class="kpi-icon-wrap bg-red-subtle">
+                            <i class="material-icons text-red">all_inbox</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Devueltas al Autopick</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="comp-kpi-devueltas">0</span>
+                                <span class="kpi-unit">cj</span>
+                            </div>
+                            <span class="kpi-subtext" id="comp-kpi-devueltas-plt">≈ 0 pallets</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card highlight-kpi-green">
+                        <div class="kpi-icon-wrap bg-green-subtle">
+                            <i class="material-icons text-green">shelves</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Repuestas al Estante</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="comp-kpi-repuestas">0</span>
+                                <span class="kpi-unit">cj</span>
+                            </div>
+                            <span class="kpi-subtext" id="comp-kpi-repuestas-plt">≈ 0 pallets</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon-wrap" style="background:#f3e8ff; color:#7c3aed;">
+                            <i class="material-icons" style="color:#7c3aed;">percent</i>
+                        </div>
+                        <div class="kpi-content">
+                            <span class="kpi-label">Tasa de Devolución</span>
+                            <div class="kpi-value-row">
+                                <span class="kpi-number" id="comp-kpi-tasa">0%</span>
+                            </div>
+                            <span class="kpi-subtext" id="comp-kpi-tasa-sub">Devueltas / Armadas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Comparativo -->
+                <div class="card card-chart" style="margin-bottom:20px;">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <i class="material-icons" style="color:#1e3a8a;">stacked_bar_chart</i>
+                            <h3>Armadas vs Devueltas por Día</h3>
+                        </div>
+                        <div class="chart-controls">
+                            <select id="comp-chart-type" onchange="renderComparativaChart()">
+                                <option value="grouped" selected>Barras Agrupadas</option>
+                                <option value="stacked">Barras Apiladas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container-wrapper">
+                        <canvas id="compChart"></canvas>
+                    </div>
+                    <div class="chart-legend-stats" id="comp-chart-legend">
+                        <div class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:#0d9488;"></span>
+                            <span>Armadas (pallets para turno noche)</span>
+                        </div>
+                        <div class="chart-legend-item">
+                            <span class="chart-legend-dot" style="background:#ef4444;"></span>
+                            <span>Devueltas (cajas que no cupieron)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Comparativa Día a Día -->
+                <div class="card">
+                    <div class="card-title-bar">
+                        <i class="material-icons" style="color:#1e3a8a;">table_chart</i>
+                        <h3>Detalle por Día</h3>
+                    </div>
+                    <div class="table-responsive-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Armadas</th>
+                                    <th>Pallets Arm.</th>
+                                    <th>Devueltas</th>
+                                    <th>Pallets Dev.</th>
+                                    <th>Repuestas</th>
+                                    <th>Tasa Dev.</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comp-table-body">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:24px;">Sin datos registrados en este período</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -515,8 +828,14 @@
         </div>
         <div class="drawer-body">
             <div class="drawer-section-title">Navegación Rápida</div>
-            <button type="button" class="drawer-btn" onclick="navigateTo('autopick-view'); toggleDrawer(false);">
+            <button type="button" class="drawer-btn" onclick="navigateTo('autopick-view'); switchAutopickTab('devueltas'); toggleDrawer(false);">
                 <i class="material-icons text-purple">all_inbox</i> Cajas Autopick Devueltas
+            </button>
+            <button type="button" class="drawer-btn" onclick="navigateTo('autopick-view'); switchAutopickTab('dejadas'); toggleDrawer(false);">
+                <i class="material-icons" style="color:#0d9488;">local_shipping</i> Pallets Armados T. Nocturno
+            </button>
+            <button type="button" class="drawer-btn" onclick="navigateTo('autopick-view'); switchAutopickTab('comparativa'); toggleDrawer(false);">
+                <i class="material-icons" style="color:#1e3a8a;">balance</i> Comparativa Armados vs Devueltas
             </button>
             <button type="button" class="drawer-btn" onclick="navigateTo('vencimiento-view'); toggleDrawer(false);">
                 <i class="material-icons text-blue">event_busy</i> Problemas Vencimiento

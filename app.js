@@ -4,8 +4,12 @@
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby6p8wNEK-cDSflo2mQe8aeVXfDxrdCuk-an-M-QG8-sH9cBoBdQN-XrEYXF50YAyM/exec';
 const AUTOPICK_STORAGE_KEY = 'reportes_autopick_records_v1';
 const OPERATORS_STORAGE_KEY = 'reportes_autopick_operators_v1';
+const DEJADAS_STORAGE_KEY = 'reportes_autopick_dejadas_v1';
+const PALLETS_PER_UNIT = 80; // 80 cajas = 1 pallet
 
 let autopickChartInstance = null;
+let dejChartInstance = null;
+let compChartInstance = null;
 
 // Helpers para normalizar motivos a solo 2 opciones válidas
 function isEstante(motivo) {
@@ -99,6 +103,32 @@ function navigateTo(viewId) {
 
     // Si navegamos a autopick o al home, actualizamos las métricas
     if (viewId === 'autopick-view' || viewId === 'home-view') {
+        updateAutopickUI();
+        updateDejUI();
+    }
+}
+
+// ==========================================================================
+// NAVEGACIÓN DE TABS DENTRO DE AUTOPICK
+// ==========================================================================
+let currentAutopickTab = 'devueltas';
+
+function switchAutopickTab(tabName) {
+    currentAutopickTab = tabName;
+    const panels = document.querySelectorAll('.autopick-tab-panel');
+    panels.forEach(p => p.style.display = 'none');
+    const target = document.getElementById('tab-' + tabName);
+    if (target) target.style.display = 'block';
+
+    document.querySelectorAll('.module-tab-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('tab-btn-' + tabName);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    if (tabName === 'dejadas') {
+        updateDejUI();
+    } else if (tabName === 'comparativa') {
+        renderComparativaTab();
+    } else {
         updateAutopickUI();
     }
 }
@@ -234,14 +264,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (turnoSelect) {
         turnoSelect.value = detectCurrentTurno();
     }
+    const dejTurnoSelect = document.getElementById('dej-turno');
+    if (dejTurnoSelect) {
+        dejTurnoSelect.value = detectCurrentTurno();
+    }
 
     // Inicializar UI
     updateAutopickUI();
+    updateDejUI();
 
     // Event listener para el formulario de autopick
     const autopickForm = document.getElementById('autopick-form');
     if (autopickForm) {
         autopickForm.addEventListener('submit', handleAutopickSubmit);
+    }
+
+    // Event listener para el formulario de cajas dejadas
+    const dejForm = document.getElementById('dejadas-form');
+    if (dejForm) {
+        dejForm.addEventListener('submit', handleDejSubmit);
+    }
+
+    // Live pallet calculator
+    const dejCant = document.getElementById('dej-cantidad');
+    if (dejCant) {
+        dejCant.addEventListener('input', updateDejPalletCalc);
+        updateDejPalletCalc();
     }
 
     // Event listener para vencimiento
@@ -480,6 +528,10 @@ function updateAutopickUI() {
     const homeCount = document.getElementById('home-autopick-count');
     if (homeCount) homeCount.textContent = totalHoy;
 
+    // Tab badge devueltas
+    const tabBadgeDev = document.getElementById('tab-badge-devueltas');
+    if (tabBadgeDev) tabBadgeDev.textContent = totalHoy;
+
     // Actualizar KPIs en Vista Autopick
     const kpiHoy = document.getElementById('kpi-cajas-hoy');
     const kpiHoySub = document.getElementById('kpi-cajas-hoy-sub');
@@ -572,6 +624,20 @@ function formatTimeAgo(timestamp) {
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `Hace ${diffHours} h`;
     return 'Días atrás';
+}
+
+// Convierte cajas a string de pallets
+function cajasToPallets(cajas) {
+    const plt = Math.floor(cajas / PALLETS_PER_UNIT);
+    const resto = cajas % PALLETS_PER_UNIT;
+    if (plt === 0) return `0 plt (+${resto} cj)`;
+    if (resto === 0) return `${plt} plt exacto${plt > 1 ? 's' : ''}`;
+    return `${plt} plt + ${resto} cj`;
+}
+
+function cajasToPalletsShort(cajas) {
+    const plt = (cajas / PALLETS_PER_UNIT).toFixed(1);
+    return `≈ ${plt} pallets`;
 }
 
 function renderOperatorsSuggestions() {
@@ -1278,17 +1344,21 @@ function renderAutopickChart() {
 // ==========================================================================
 function generateWhatsAppMessage() {
     const records = getAutopickRecords();
+    const dejRecords = getDejRecords();
     const todayStr = getTodayDateString();
     const todayRecords = records.filter(r => r.fecha === todayStr);
+    const todayDej = dejRecords.filter(r => r.fecha === todayStr);
 
     const totalHoy = todayRecords.reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+    const totalDejHoy = todayDej.reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+    const repuestas = Math.max(0, totalDejHoy - totalHoy);
+    const tasaDev = totalDejHoy > 0 ? Math.round(totalHoy / totalDejHoy * 100) : 0;
 
-    // Agrupar por colaborador
+    // Agrupar devueltas por colaborador
     const porOperador = {};
     todayRecords.forEach(r => {
         porOperador[r.quien] = (porOperador[r.quien] || 0) + Number(r.cantidad);
     });
-
     let listaOperadores = '';
     const sortedOps = Object.entries(porOperador).sort((a, b) => b[1] - a[1]);
     if (sortedOps.length > 0) {
@@ -1302,13 +1372,18 @@ function generateWhatsAppMessage() {
         ? `${last.hora} hrs por ${last.quien} (+${last.cantidad} cajas)` 
         : 'N/A';
 
-    return `📦 *REPORTE DE CAJAS AUTOPICK DEVUELTAS*
+    const pltDej = (totalDejHoy / PALLETS_PER_UNIT).toFixed(1);
+    const pltDev = (totalHoy / PALLETS_PER_UNIT).toFixed(1);
+
+    return `📦 *REPORTE CAJAS AUTOPICK*
 📅 Fecha: ${todayStr}
 ━━━━━━━━━━━━━━━━━━━━━━
-📊 *Total Cajas Devueltas Hoy:* ${totalHoy} cajas
-📝 *Anotaciones realizadas:* ${todayRecords.length}
+🏗️ *Pallets armados para noche:* ${totalDejHoy} cajas (≈${pltDej} plt)
+📤 *Devueltas al Autopick:* ${totalHoy} cajas (≈${pltDev} plt)
+✅ *Repuestas al estante:* ${repuestas} cajas
+📊 *Tasa de devolución:* ${tasaDev}%
 
-👥 *Detalle por Colaborador:*
+👥 *Devueltas por Colaborador:*
 ${listaOperadores}
 
 🕒 *Último ingreso:* ${ultimoText}
@@ -1340,14 +1415,16 @@ function shareQuickSummary() {
 // ==========================================================================
 function exportAutopickCSV() {
     const records = getAutopickRecords();
-    if (records.length === 0) {
+    const dejRecords = getDejRecords();
+
+    if (records.length === 0 && dejRecords.length === 0) {
         showToast('No hay registros para exportar', 'error');
         return;
     }
 
-    let csvContent = '\uFEFF'; // BOM para que Excel respete tildes y caracteres especiales
+    let csvContent = '\uFEFF'; // BOM UTF-8
+    csvContent += 'HOJA: Cajas Devueltas\n';
     csvContent += 'ID;Fecha;Hora;Turno;Colaborador;Cantidad Cajas;Motivo;Observaciones\n';
-
     records.forEach(r => {
         const row = [
             `"${r.id || ''}"`,
@@ -1362,16 +1439,51 @@ function exportAutopickCSV() {
         csvContent += row.join(';') + '\n';
     });
 
+    csvContent += '\nHOJA: Pallets Armados para Turno Nocturno\n';
+    csvContent += 'ID;Fecha;Hora;Turno;Colaborador;Cantidad Cajas;Pallets (÷80);Observaciones\n';
+    dejRecords.forEach(r => {
+        const pallets = (r.cantidad / PALLETS_PER_UNIT).toFixed(2);
+        const row = [
+            `"${r.id || ''}"`,
+            `"${r.fecha || ''}"`,
+            `"${r.hora || ''}"`,
+            `"${r.turno || ''}"`,
+            `"${(r.quien || '').replace(/"/g, '""')}"`,
+            r.cantidad,
+            pallets,
+            `"${(r.observaciones || '').replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(';') + '\n';
+    });
+
+    // Hoja comparativa por día
+    csvContent += '\nHOJA: Comparativa Diaria\n';
+    csvContent += 'Fecha;Armadas;Pallets Arm.;Devueltas;Pallets Dev.;Repuestas;Tasa Devolucion %\n';
+    const allDates = new Set([
+        ...records.map(r => r.fecha),
+        ...dejRecords.map(r => r.fecha)
+    ]);
+    const sortedDates = [...allDates].filter(Boolean).sort();
+    sortedDates.forEach(fecha => {
+        const rec = records.filter(r => r.fecha === fecha).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+        const dej = dejRecords.filter(r => r.fecha === fecha).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+        const rep = Math.max(0, dej - rec);
+        const tasa = dej > 0 ? Math.round(rec / dej * 100) : 0;
+        const pltDej = (dej / PALLETS_PER_UNIT).toFixed(2);
+        const pltRec = (rec / PALLETS_PER_UNIT).toFixed(2);
+        csvContent += `"${fecha}";${dej};${pltDej};${rec};${pltRec};${rep};${tasa}%\n`;
+    });
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Cajas_Autopick_Devueltas_${getTodayDateString()}.csv`);
+    link.setAttribute('download', `Cajas_Autopick_${getTodayDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    showToast('Archivo CSV descargado para Excel', 'success');
+    showToast('Archivo CSV descargado (Devueltas + Pallets Armados + Comparativa)', 'success');
 }
 
 // ==========================================================================
@@ -1457,6 +1569,621 @@ function clearAllAutopickData() {
         showToast('Historial de cajas autopick vaciado', 'info');
         updateAutopickUI();
     }, 'Introduce el PIN de supervisor para vaciar el historial de cajas');
+}
+
+// ==========================================================================
+// MODELO DE DATOS - PALLETS ARMADOS PARA TURNO NOCTURNO
+// ==========================================================================
+function getDejRecords() {
+    try {
+        const data = localStorage.getItem(DEJADAS_STORAGE_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveDejRecords(records) {
+    try {
+        localStorage.setItem(DEJADAS_STORAGE_KEY, JSON.stringify(records));
+    } catch (e) {
+        showToast('Error de almacenamiento', 'error');
+    }
+}
+
+// ==========================================================================
+// CONTROLES DE CANTIDAD (DEJADAS)
+// ==========================================================================
+function adjustDejCount(delta) {
+    const input = document.getElementById('dej-cantidad');
+    if (!input) return;
+    let current = parseInt(input.value, 10) || 1;
+    current = Math.max(1, current + delta);
+    input.value = current;
+    updateDejPalletCalc();
+}
+
+function setDejCount(qty) {
+    const input = document.getElementById('dej-cantidad');
+    if (input) {
+        input.value = qty;
+        updateDejPalletCalc();
+    }
+}
+
+function updateDejPalletCalc() {
+    const input = document.getElementById('dej-cantidad');
+    const valEl = document.getElementById('dej-pallet-val');
+    if (!input || !valEl) return;
+    const qty = parseInt(input.value, 10) || 0;
+    valEl.textContent = cajasToPallets(qty);
+}
+
+// ==========================================================================
+// ENVIO DE PALLETS ARMADOS PARA TURNO NOCTURNO
+// ==========================================================================
+async function handleDejSubmit(e) {
+    e.preventDefault();
+    const quienInput = document.getElementById('dej-quien');
+    const cantidadInput = document.getElementById('dej-cantidad');
+    const turnoSelect = document.getElementById('dej-turno');
+    const obsInput = document.getElementById('dej-obs');
+    const submitBtn = document.getElementById('dej-submit-btn');
+
+    const quien = quienInput.value.trim();
+    const cantidad = parseInt(cantidadInput.value, 10);
+    const turno = turnoSelect.value;
+    const observaciones = obsInput.value.trim();
+
+    if (!quien || isNaN(cantidad) || cantidad <= 0) {
+        showToast('Por favor ingresa un nombre y una cantidad válida', 'error');
+        return;
+    }
+
+    const now = new Date();
+    const hora = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fecha = getTodayDateString();
+
+    const newRecord = {
+        id: 'dej_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        tipo: 'PalletsArmados',
+        quien,
+        cantidad,
+        turno,
+        observaciones,
+        fecha,
+        hora,
+        timestamp: Date.now()
+    };
+
+    const records = getDejRecords();
+    records.unshift(newRecord);
+    saveDejRecords(records);
+    saveOperator(quien);
+
+    if (syncChannel) syncChannel.postMessage({ type: 'UPDATE' });
+
+    // Enviar al webhook (misma hoja, tipo diferente)
+    if (WEBHOOK_URL) {
+        const payload = {
+            tipoReporte: 'PalletsArmadosTurnoNocturno',
+            ...newRecord,
+            pallets: (cantidad / PALLETS_PER_UNIT).toFixed(2),
+            fechaEnvio: now.toLocaleString()
+        };
+        fetch(WEBHOOK_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        }).catch(err => console.warn('Webhook dej error:', err));
+    }
+
+    showToast(`✅ Pallet armado: +${cantidad} cajas (${cajasToPallets(cantidad)}) por ${quien}`, 'success');
+    setDejCount(80); // reset a 1 pallet por defecto
+    obsInput.value = '';
+    updateDejUI();
+    if (currentAutopickTab === 'comparativa') renderComparativaTab();
+}
+
+// ==========================================================================
+// ACTUALIZACION UI - CAJAS DEJADAS
+// ==========================================================================
+function updateDejUI() {
+    const records = getDejRecords();
+    const todayStr = getTodayDateString();
+    const todayRecords = records.filter(r => r.fecha === todayStr);
+    const totalHoy = todayRecords.reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+    const totalHistorico = records.reduce((sum, r) => sum + (Number(r.cantidad) || 0), 0);
+
+    const pltHoy = Math.floor(totalHoy / PALLETS_PER_UNIT);
+    const restoHoy = totalHoy % PALLETS_PER_UNIT;
+
+    // Badges en Home
+    const homeCount = document.getElementById('home-dejadas-count');
+    if (homeCount) homeCount.textContent = totalHoy;
+
+    // Tab badge
+    const tabBadge = document.getElementById('tab-badge-dejadas');
+    if (tabBadge) tabBadge.textContent = totalHoy;
+
+    // KPIs
+    const kpiHoy = document.getElementById('kpi-dej-hoy');
+    const kpiHoySub = document.getElementById('kpi-dej-hoy-sub');
+    if (kpiHoy) kpiHoy.textContent = totalHoy;
+    if (kpiHoySub) kpiHoySub.textContent = todayRecords.length > 0
+        ? `${todayRecords.length} registro${todayRecords.length > 1 ? 's' : ''} hoy`
+        : 'Sin registros hoy';
+
+    const kpiPallets = document.getElementById('kpi-dej-pallets');
+    const kpiPalletsSub = document.getElementById('kpi-dej-pallets-sub');
+    if (kpiPallets) kpiPallets.textContent = pltHoy;
+    if (kpiPalletsSub) kpiPalletsSub.textContent = `${restoHoy} cajas residuales`;
+
+    const kpiTotal = document.getElementById('kpi-dej-total');
+    const kpiTotalSub = document.getElementById('kpi-dej-total-sub');
+    if (kpiTotal) kpiTotal.textContent = totalHistorico;
+    if (kpiTotalSub) kpiTotalSub.textContent = `${records.length} registros en total`;
+
+    const kpiUltimo = document.getElementById('kpi-dej-ultimo');
+    const kpiUltimoDet = document.getElementById('kpi-dej-ultimo-det');
+    if (records.length > 0) {
+        const last = records[0];
+        if (kpiUltimo) kpiUltimo.textContent = `${last.quien} (+${last.cantidad})`;
+        if (kpiUltimoDet) kpiUltimoDet.textContent = `${formatTimeAgo(last.timestamp)} · ${last.hora}`;
+    } else {
+        if (kpiUltimo) kpiUltimo.textContent = '--';
+        if (kpiUltimoDet) kpiUltimoDet.textContent = 'Esperando registros';
+    }
+
+    // Sugerencias de operadores (misma lista)
+    const list = getRecentOperators();
+    const dlist = document.getElementById('dej-operators-list');
+    if (dlist) dlist.innerHTML = list.map(op => `<option value="${op}">`).join('');
+    const cont = document.getElementById('dej-operators-container');
+    const tags = document.getElementById('dej-operators-tags');
+    if (cont && tags) {
+        if (list.length > 0) {
+            cont.style.display = 'flex';
+            tags.innerHTML = list.slice(0, 4).map(op =>
+                `<button type="button" class="quick-tag-chip" onclick="document.getElementById('dej-quien').value='${op}'; document.getElementById('dej-quien').focus();">${op}</button>`
+            ).join('');
+        } else {
+            cont.style.display = 'none';
+        }
+    }
+
+    filterDejHistoryList();
+    renderDejChart();
+}
+
+// ==========================================================================
+// HISTORIAL PALLETS ARMADOS
+// ==========================================================================
+function filterDejHistoryList() {
+    const searchInput = document.getElementById('dej-history-search');
+    const term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const records = getDejRecords();
+    const filtered = term
+        ? records.filter(r =>
+            (r.quien && r.quien.toLowerCase().includes(term)) ||
+            (r.turno && r.turno.toLowerCase().includes(term)) ||
+            (r.observaciones && r.observaciones.toLowerCase().includes(term))
+        )
+        : records;
+
+    const badge = document.getElementById('dej-history-count');
+    if (badge) badge.textContent = filtered.length;
+
+    renderDejHistoryDOM(filtered);
+}
+
+function renderDejHistoryDOM(records) {
+    const container = document.getElementById('dej-history-list');
+    if (!container) return;
+    if (records.length === 0) {
+        container.innerHTML = `
+            <div class="history-empty">
+                <i class="material-icons">move_to_inbox</i>
+                <p>No hay pallets armados registrados aún.</p>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = records.map(rec => {
+        const initials = getInitials(rec.quien);
+        const pltText = cajasToPallets(Number(rec.cantidad) || 0);
+        const obsHtml = rec.observaciones
+            ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic;">"${escapeHtml(rec.observaciones)}"</div>`
+            : '';
+        return `
+            <div class="history-item" id="dej-item-${rec.id}">
+                <div class="history-item-left">
+                    <div class="history-avatar" style="background:#0d9488;">${initials}</div>
+                    <div class="history-details">
+                        <div class="history-top-row">
+                            <span class="history-author">${escapeHtml(rec.quien)}</span>
+                            <span class="history-pill pill-turno">${escapeHtml(rec.turno || 'Turno')}</span>
+                            <span class="history-pill pill-dejada">Pallet Armado</span>
+                        </div>
+                        <div class="history-meta-row">
+                            <i class="material-icons" style="font-size: 13px;">schedule</i>
+                            <span>${rec.fecha} a las ${rec.hora}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #0f766e; font-weight: 600; margin-top: 2px;">${pltText}</div>
+                        ${obsHtml}
+                    </div>
+                </div>
+                <div class="history-item-right">
+                    <div class="history-qty-badge" style="background:#0d9488;">+${rec.cantidad}</div>
+                    <div class="history-actions">
+                        <button type="button" class="btn-icon-danger" title="Eliminar" onclick="deleteDejRecord('${rec.id}')">
+                            <i class="material-icons" style="font-size: 17px;">delete</i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function deleteDejRecord(id) {
+    requestSupervisorAccess(() => {
+        if (!confirm('¿Eliminar este registro de pallet armado?')) return;
+        let records = getDejRecords();
+        records = records.filter(r => r.id !== id);
+        saveDejRecords(records);
+        showToast('Registro eliminado', 'info');
+        updateDejUI();
+    }, 'Introduce el PIN de supervisor para eliminar');
+}
+
+// ==========================================================================
+// GRAFICO - PALLETS ARMADOS
+// ==========================================================================
+function renderDejChart() {
+    const canvas = document.getElementById('dejChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const periodSelect = document.getElementById('dej-chart-period');
+    const period = periodSelect ? periodSelect.value : '7d';
+    const records = getDejRecords();
+    const todayStr = getTodayDateString();
+
+    if (dejChartInstance) { dejChartInstance.destroy(); dejChartInstance = null; }
+    const ctx = canvas.getContext('2d');
+
+    let items = [];
+    if (period === '7d') {
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i, 12, 0, 0);
+            const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const dayName = DIAS_SEMANA_COMPLETO[d.getDay()];
+            items.push({ dateKey, dayName, chartLabel: [dayName, `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`], total: 0, isToday: i===0 });
+        }
+        records.forEach(r => {
+            const item = items.find(it => it.dateKey === r.fecha);
+            if (item) item.total += Number(r.cantidad) || 0;
+        });
+    } else if (period === 'hoy') {
+        const todayRecords = records.filter(r => r.fecha === todayStr);
+        const hourMap = {};
+        todayRecords.forEach(r => {
+            const h = (r.hora || '12:00').split(':')[0] + ':00';
+            if (!hourMap[h]) hourMap[h] = { chartLabel: h, total: 0, isToday: true, dayName: h };
+            hourMap[h].total += Number(r.cantidad) || 0;
+        });
+        items = Object.keys(hourMap).sort().map(k => hourMap[k]);
+    } else {
+        const dateMap = {};
+        records.forEach(r => {
+            if (!r.fecha) return;
+            if (!dateMap[r.fecha]) {
+                const parts = r.fecha.split('-').map(Number);
+                const dt = new Date(parts[0], parts[1]-1, parts[2], 12, 0, 0);
+                dateMap[r.fecha] = { dateKey: r.fecha, dayName: DIAS_SEMANA_COMPLETO[dt.getDay()] || 'Día', chartLabel: [`${String(parts[2]).padStart(2,'0')}/${String(parts[1]).padStart(2,'0')}`], total: 0, isToday: r.fecha === todayStr };
+            }
+            dateMap[r.fecha].total += Number(r.cantidad) || 0;
+        });
+        items = Object.keys(dateMap).sort().map(k => dateMap[k]);
+    }
+
+    if (items.length === 0) return;
+
+    dejChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: items.map(it => it.chartLabel),
+            datasets: [{
+                label: 'Cajas Armadas',
+                data: items.map(it => it.total),
+                backgroundColor: items.map(it => it.isToday ? '#14b8a6' : '#0d9488'),
+                borderColor: items.map(it => it.isToday ? '#0f766e' : '#0f766e'),
+                borderWidth: 1.5,
+                borderRadius: 6,
+                maxBarThickness: 48
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 22 } },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f766e',
+                    padding: 12,
+                    callbacks: {
+                        label: (ctx) => ` ${ctx.raw} cajas (${cajasToPallets(ctx.raw)})`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { font: { size: 11 }, callback: v => `${v} cj` }, grid: { color: 'rgba(0,0,0,0.06)' } },
+                x: { ticks: { font: { size: 11, weight: '600' }, maxRotation: 0 }, grid: { display: false } }
+            }
+        }
+    });
+
+    const legendEl = document.getElementById('dej-chart-legend');
+    if (legendEl) {
+        const total = items.reduce((s, it) => s + it.total, 0);
+        legendEl.innerHTML = `
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#0d9488;"></span><span>Total período: <strong>${total} cajas</strong> (${cajasToPallets(total)})</span></div>`;
+    }
+}
+
+// ==========================================================================
+// COMPARATIVA: RENDER COMPLETO
+// ==========================================================================
+function renderComparativaTab() {
+    renderComparativaKPIs();
+    renderComparativaChart();
+    renderComparativaTable();
+}
+
+function getComparativaPeriodDates() {
+    const sel = document.getElementById('comp-period-select');
+    const period = sel ? sel.value : '7d';
+    const todayStr = getTodayDateString();
+    const dej = getDejRecords();
+    const dev = getAutopickRecords();
+
+    let filteredDej, filteredDev;
+    if (period === 'hoy') {
+        filteredDej = dej.filter(r => r.fecha === todayStr);
+        filteredDev = dev.filter(r => r.fecha === todayStr);
+    } else if (period === '7d') {
+        const limitMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        filteredDej = dej.filter(r => (r.timestamp || 0) >= limitMs);
+        filteredDev = dev.filter(r => (r.timestamp || 0) >= limitMs);
+    } else {
+        filteredDej = dej;
+        filteredDev = dev;
+    }
+    return { filteredDej, filteredDev, period, todayStr };
+}
+
+function renderComparativaKPIs() {
+    const { filteredDej, filteredDev } = getComparativaPeriodDates();
+    const totalDej = filteredDej.reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+    const totalDev = filteredDev.reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+    const repuestas = Math.max(0, totalDej - totalDev);
+    const tasa = totalDej > 0 ? Math.round(totalDev / totalDej * 100) : 0;
+
+    // KPIs
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('comp-kpi-recibidas', totalDej);
+    setEl('comp-kpi-recibidas-plt', cajasToPalletsShort(totalDej));
+    setEl('comp-kpi-devueltas', totalDev);
+    setEl('comp-kpi-devueltas-plt', cajasToPalletsShort(totalDev));
+    setEl('comp-kpi-repuestas', repuestas);
+    setEl('comp-kpi-repuestas-plt', cajasToPalletsShort(repuestas));
+    setEl('comp-kpi-tasa', `${tasa}%`);
+    setEl('comp-kpi-tasa-sub', totalDej > 0 ? `${totalDev} de ${totalDej} cajas devueltas` : 'Sin datos');
+
+    // Barra de balance
+    const barDev = document.getElementById('comp-bar-devueltas');
+    const barRep = document.getElementById('comp-bar-repuestas');
+    if (totalDej > 0) {
+        const pctDev = Math.min(100, Math.round(totalDev / totalDej * 100));
+        const pctRep = 100 - pctDev;
+        if (barDev) barDev.style.width = pctDev + '%';
+        if (barRep) barRep.style.width = pctRep + '%';
+    } else {
+        if (barDev) barDev.style.width = '0%';
+        if (barRep) barRep.style.width = '0%';
+    }
+
+    setEl('comp-leg-repuestas', repuestas + ' cj');
+    setEl('comp-leg-devueltas', totalDev + ' cj');
+    setEl('comp-leg-recibidas', totalDej + ' cj');
+
+    // Rate badge
+    const rateBadge = document.getElementById('comp-rate-badge');
+    if (rateBadge) {
+        if (totalDej === 0) {
+            rateBadge.className = 'balance-badge-rate';
+            rateBadge.textContent = 'Sin datos';
+        } else if (tasa <= 20) {
+            rateBadge.className = 'balance-badge-rate rate-good';
+            rateBadge.innerHTML = `✅ ${tasa}% devueltas`;
+        } else if (tasa <= 50) {
+            rateBadge.className = 'balance-badge-rate rate-warn';
+            rateBadge.innerHTML = `⚠️ ${tasa}% devueltas`;
+        } else {
+            rateBadge.className = 'balance-badge-rate rate-danger';
+            rateBadge.innerHTML = `❌ ${tasa}% devueltas`;
+        }
+    }
+}
+
+function renderComparativaChart() {
+    const canvas = document.getElementById('compChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (compChartInstance) { compChartInstance.destroy(); compChartInstance = null; }
+
+    const { filteredDej, filteredDev, period, todayStr } = getComparativaPeriodDates();
+    const typeSelect = document.getElementById('comp-chart-type');
+    const chartType = typeSelect ? typeSelect.value : 'grouped';
+    const ctx = canvas.getContext('2d');
+
+    // Construir mapa de fechas (últimos 7 días o rangó real)
+    let items = [];
+    if (period === '7d') {
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i, 12, 0, 0);
+            const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const dayName = DIAS_SEMANA_COMPLETO[d.getDay()];
+            items.push({ dateKey, chartLabel: [dayName, `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`], dej: 0, dev: 0 });
+        }
+    } else if (period === 'hoy') {
+        const hours = new Set([
+            ...filteredDej.map(r => (r.hora||'12:00').split(':')[0] + ':00'),
+            ...filteredDev.map(r => (r.hora||'12:00').split(':')[0] + ':00')
+        ]);
+        [...hours].sort().forEach(h => items.push({ dateKey: h, chartLabel: h, dej: 0, dev: 0 }));
+    } else {
+        const allDates = new Set([
+            ...filteredDej.map(r => r.fecha),
+            ...filteredDev.map(r => r.fecha)
+        ]);
+        [...allDates].filter(Boolean).sort().forEach(d => {
+            const parts = d.split('-').map(Number);
+            const dt = new Date(parts[0], parts[1]-1, parts[2], 12, 0, 0);
+            items.push({ dateKey: d, chartLabel: [DIAS_SEMANA_COMPLETO[dt.getDay()]||d, `${String(parts[2]).padStart(2,'0')}/${String(parts[1]).padStart(2,'0')}`], dej: 0, dev: 0 });
+        });
+    }
+
+    filteredDej.forEach(r => {
+        const key = period === 'hoy' ? (r.hora||'12:00').split(':')[0] + ':00' : r.fecha;
+        const item = items.find(it => it.dateKey === key);
+        if (item) item.dej += Number(r.cantidad) || 0;
+    });
+    filteredDev.forEach(r => {
+        const key = period === 'hoy' ? (r.hora||'12:00').split(':')[0] + ':00' : r.fecha;
+        const item = items.find(it => it.dateKey === key);
+        if (item) item.dev += Number(r.cantidad) || 0;
+    });
+
+    if (items.length === 0) return;
+
+    compChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: items.map(it => it.chartLabel),
+            datasets: [
+                {
+                    label: 'Armadas',
+                    data: items.map(it => it.dej),
+                    backgroundColor: '#0d9488',
+                    borderRadius: 6,
+                    maxBarThickness: 40,
+                    stack: 'stack1'
+                },
+                {
+                    label: 'Devueltas',
+                    data: items.map(it => it.dev),
+                    backgroundColor: '#ef4444',
+                    borderRadius: 6,
+                    maxBarThickness: 40,
+                    stack: chartType === 'stacked' ? 'stack1' : 'stack2'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 10 } },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12, weight: '600' } }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    callbacks: {
+                        label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw} cj (${cajasToPallets(ctx.raw)})`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, stacked: chartType === 'stacked', ticks: { font: { size: 11 }, callback: v => `${v} cj` }, grid: { color: 'rgba(0,0,0,0.06)' } },
+                x: { stacked: chartType === 'stacked', ticks: { font: { size: 11, weight: '600' }, maxRotation: 0 }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+function renderComparativaTable() {
+    const tbody = document.getElementById('comp-table-body');
+    if (!tbody) return;
+
+    const { filteredDej, filteredDev } = getComparativaPeriodDates();
+    const allDates = new Set([
+        ...filteredDej.map(r => r.fecha),
+        ...filteredDev.map(r => r.fecha)
+    ]);
+    const sortedDates = [...allDates].filter(Boolean).sort().reverse();
+
+    if (sortedDates.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:24px;">Sin datos registrados en este período</td></tr>`;
+        return;
+    }
+
+    let totalDej = 0, totalDev = 0;
+    const rows = sortedDates.map(fecha => {
+        const dej = filteredDej.filter(r => r.fecha === fecha).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+        const dev = filteredDev.filter(r => r.fecha === fecha).reduce((s, r) => s + (Number(r.cantidad) || 0), 0);
+        const rep = Math.max(0, dej - dev);
+        const tasa = dej > 0 ? Math.round(dev / dej * 100) : 0;
+        totalDej += dej;
+        totalDev += dev;
+
+        const pltDej = (dej / PALLETS_PER_UNIT).toFixed(1);
+        const pltDev = (dev / PALLETS_PER_UNIT).toFixed(1);
+
+        let statusHtml;
+        if (dej === 0) {
+            statusHtml = `<span class="status-pill-warn">Sin recibidas</span>`;
+        } else if (tasa <= 20) {
+            statusHtml = `<span class="status-pill-good">✅ Excelente</span>`;
+        } else if (tasa <= 50) {
+            statusHtml = `<span class="status-pill-warn">⚠️ Regular</span>`;
+        } else {
+            statusHtml = `<span class="status-pill-danger">❌ Alta dev.</span>`;
+        }
+
+        return `
+            <tr>
+                <td><strong>${fecha}</strong></td>
+                <td><span class="table-num-pill" style="color:#0d9488;">${dej}</span><span class="table-sub-plt">${cajasToPallets(dej)}</span></td>
+                <td>${pltDej} plt</td>
+                <td><span class="table-num-pill" style="color:#ef4444;">${dev}</span><span class="table-sub-plt">${cajasToPallets(dev)}</span></td>
+                <td>${pltDev} plt</td>
+                <td><span class="table-num-pill" style="color:#059669;">${rep}</span></td>
+                <td>${tasa}%</td>
+                <td>${statusHtml}</td>
+            </tr>`;
+    }).join('');
+
+    const totalRep = Math.max(0, totalDej - totalDev);
+    const totalTasa = totalDej > 0 ? Math.round(totalDev / totalDej * 100) : 0;
+    const totalRow = `
+        <tr class="total-row">
+            <td>TOTAL</td>
+            <td>${totalDej} cj</td>
+            <td>${(totalDej / PALLETS_PER_UNIT).toFixed(1)} plt</td>
+            <td>${totalDev} cj</td>
+            <td>${(totalDev / PALLETS_PER_UNIT).toFixed(1)} plt</td>
+            <td>${totalRep} cj</td>
+            <td>${totalTasa}%</td>
+            <td>—</td>
+        </tr>`;
+    tbody.innerHTML = rows + totalRow;
 }
 
 // ==========================================================================
